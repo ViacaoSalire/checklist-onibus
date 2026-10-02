@@ -1,0 +1,1046 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Checklist do Ônibus</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f3a5f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Checklist">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<script src="config.js?v2026-10-02-6"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root{
+    --azul:#1f3a5f; --azul2:#2d5486; --fundo:#f3f5f9; --card:#ffffff; --borda:#dfe4ec;
+    --texto:#1d2633; --suave:#667085;
+    --verde:#1e8e4f; --verdeBg:#e3f5ea; --amareloBg:#fff4d6;
+    --vermelho:#c0392b; --vermelhoBg:#fde7e5; --lilas:#5b4fb3; --lilasBg:#ece9fb;
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;background:var(--fundo);color:var(--texto);
+    font:16px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  button,input,select,textarea{font:inherit;color:inherit}
+  .topo{position:sticky;top:0;z-index:5;background:var(--azul);color:#fff;
+    padding:calc(10px + env(safe-area-inset-top)) 16px 12px;box-shadow:0 2px 8px rgba(0,0,0,.15)}
+  .linha1{display:flex;justify-content:space-between;align-items:flex-start;gap:8px}
+  .nome{font-size:18px;font-weight:700}
+  .sub{font-size:13px;opacity:.85;margin-top:1px}
+  .status{font-size:12px;padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.15);white-space:nowrap}
+  .status.erro{background:#f6c344;color:#3a2a00}
+  .modo{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:12px;background:rgba(255,255,255,.12);padding:4px;border-radius:12px}
+  .modo button{border:0;border-radius:9px;padding:11px 6px;background:transparent;color:#fff;font-weight:700;font-size:15px}
+  .modo button.on{background:#fff;color:var(--azul)}
+  .contas{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:10px}
+  .conta{background:rgba(255,255,255,.12);border-radius:10px;padding:6px 8px;text-align:center}
+  .conta b{display:block;font-size:20px}
+  .conta span{font-size:11px;opacity:.9}
+  .ferramentas{display:flex;gap:8px;padding:12px 16px 4px;align-items:center}
+  .busca{flex:1;min-width:0;border:1px solid var(--borda);border-radius:10px;padding:10px 12px;background:#fff}
+  .filtro{border:1px solid var(--borda);background:#fff;border-radius:10px;padding:10px 12px;font-size:14px;white-space:nowrap}
+  .filtro.on{background:var(--azul);color:#fff;border-color:var(--azul)}
+  .dica{padding:2px 16px 8px;font-size:13px;color:var(--suave)}
+  .lista{padding:0 12px 96px;display:flex;flex-direction:column;gap:8px}
+  .card{display:block;background:var(--card);border:1px solid var(--borda);border-radius:14px;overflow:hidden}
+  .cardtop{display:flex;align-items:stretch}
+  .kmlinha{display:flex;align-items:center;gap:8px;padding:0 12px 10px 58px;font-size:12px;color:var(--suave)}
+  .kmlinha span{white-space:nowrap}
+  .kmlinha input{flex:1;min-width:0;border:1px solid var(--borda);border-radius:8px;padding:7px 10px;font-size:16px;background:#fff}
+  .card.ok{background:var(--verdeBg);border-color:#bfe6cf}
+  .card.meio{background:var(--amareloBg);border-color:#f1dca2}
+  .card.just{background:var(--lilasBg);border-color:#d6d0f5}
+  .card.alerta{background:var(--vermelhoBg);border-color:#f3c3be}
+  .principal{flex:1;min-width:0;border:0;background:transparent;text-align:left;padding:12px 12px 10px;display:flex;gap:12px;align-items:center}
+  .caixa{flex:none;width:34px;height:34px;border-radius:9px;border:2px solid #b9c2d0;background:#fff;display:grid;place-items:center;font-size:20px;font-weight:800;color:#fff}
+  .caixa.on{background:var(--verde);border-color:var(--verde)}
+  .info{min-width:0}
+  .aluno{font-weight:600;font-size:16px}
+  .chips{display:flex;flex-wrap:wrap;gap:4px;margin-top:4px}
+  .chip{font-size:12px;padding:2px 8px;border-radius:999px;background:#eef1f6;color:var(--suave)}
+  .chip.e{background:#d3efdf;color:#11683a} .chip.s{background:#d6e4f7;color:#1f4f8a}
+  .chip.m{background:#e2ddfb;color:#43379a} .chip.x{background:#fbd6d1;color:#9b2c20}
+  .chip.esc{background:transparent;padding-left:0;color:var(--suave)}
+  .motbtn{flex:none;border:0;border-left:1px solid var(--borda);background:transparent;padding:0 14px;color:var(--azul2);font-size:13px;font-weight:600}
+  .vazio{text-align:center;color:var(--suave);padding:30px 10px}
+  .nav{position:fixed;left:0;right:0;bottom:0;z-index:6;display:grid;grid-template-columns:repeat(3,1fr);
+    background:#fff;border-top:1px solid var(--borda);padding-bottom:env(safe-area-inset-bottom)}
+  .nav button{border:0;background:none;padding:10px 4px 12px;font-size:12px;color:var(--suave);display:flex;flex-direction:column;align-items:center;gap:2px}
+  .nav button b{font-size:19px;line-height:1}
+  .nav button.on{color:var(--azul);font-weight:700}
+  /* telas de configuração */
+  .tela{max-width:520px;margin:0 auto;padding:24px 18px 110px}
+  .tela h1{font-size:22px;margin:0 0 4px;color:var(--azul)}
+  .tela .p{color:var(--suave);margin:0 0 18px;font-size:14px}
+  .rot{display:block;font-weight:700;font-size:14px;margin:16px 0 6px}
+  .campo{width:100%;border:1px solid var(--borda);border-radius:12px;padding:13px;font-size:16px;background:#fff}
+  .checks{background:#fff;border:1px solid var(--borda);border-radius:12px;max-height:260px;overflow:auto}
+  .checks label{display:flex;gap:10px;align-items:center;padding:11px 12px;border-bottom:1px solid #eef1f6}
+  .checks label:last-child{border-bottom:0}
+  .checks input{width:20px;height:20px;flex:none;accent-color:var(--azul)}
+  .contador{font-size:13px;color:var(--suave);margin-top:6px}
+  .grupo{margin-top:14px}
+  .grupo .gcab{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;gap:8px}
+  .grupo .gcab b{font-size:14px;color:var(--azul)}
+  .link{border:0;background:none;color:var(--azul2);font-weight:600;padding:6px 0;font-size:14px}
+  .grande{display:block;width:100%;border:0;border-radius:12px;padding:15px;background:var(--azul);color:#fff;font-weight:700;font-size:16px;margin-top:10px}
+  .grande.claro{background:#fff;color:var(--azul);border:1px solid var(--borda)}
+  .barra{position:fixed;left:0;right:0;bottom:0;z-index:6;background:rgba(243,245,249,.97);border-top:1px solid var(--borda);
+    padding:10px 16px calc(10px + env(safe-area-inset-bottom));display:grid;grid-template-columns:1fr 2fr;gap:8px}
+  .barra button{margin:0}
+  .novo{display:grid;grid-template-columns:1fr;gap:8px;background:#fff;border:1px dashed #b9c2d0;border-radius:12px;padding:12px;margin-top:16px}
+  .msg{color:var(--vermelho);font-size:14px;min-height:20px;margin-top:8px}
+  .carregando{text-align:center;padding:60px 20px;color:var(--suave)}
+  /* folha de motivo */
+  .fundoFolha{position:fixed;inset:0;background:rgba(10,20,35,.45);z-index:20;display:none}
+  .folha{position:fixed;left:0;right:0;bottom:0;z-index:21;background:#fff;border-radius:18px 18px 0 0;
+    padding:16px 16px calc(16px + env(safe-area-inset-bottom));max-height:85vh;overflow:auto;display:none}
+  .folha h2{font-size:17px;margin:0 0 2px}
+  .folha .sub{color:var(--suave);margin-bottom:12px;opacity:1}
+  .opcoes{display:flex;flex-direction:column;gap:6px}
+  .opcao{border:1px solid var(--borda);background:#fff;border-radius:10px;padding:12px;text-align:left}
+  .opcao.on{border-color:var(--lilas);background:var(--lilasBg);font-weight:700;color:#43379a}
+  .acoes{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:12px}
+  .acoes button{border-radius:12px;padding:13px;font-weight:700;border:1px solid var(--borda);background:#fff}
+  .acoes .salvar{background:var(--azul);color:#fff;border-color:var(--azul)}
+  textarea{width:100%;border:1px solid var(--borda);border-radius:10px;padding:10px;margin-top:10px;min-height:64px;background:#fff}
+  /* viagens */
+  .bloco{padding:14px 12px 110px;display:flex;flex-direction:column;gap:12px;overflow-x:hidden}
+  .cartao{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:14px}
+  .cartao h3{margin:0 0 10px;font-size:17px;color:var(--azul)}
+  .rot2{display:block;font-size:12px;color:var(--suave);margin:12px 0 6px;font-weight:600;text-transform:uppercase;letter-spacing:.02em}
+  .seg{display:grid;gap:6px}
+  .seg.c3{grid-template-columns:repeat(3,1fr)} .seg.c1{grid-template-columns:1fr}
+  .seg button{border:1px solid var(--borda);background:#fff;border-radius:10px;padding:11px 8px;font-weight:600;font-size:15px}
+  .seg button.on{background:var(--azul);color:#fff;border-color:var(--azul)}
+  .grade{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .grade label{font-size:12px;color:var(--suave);display:flex;flex-direction:column;gap:4px;min-width:0}
+  .grade input{border:1px solid var(--borda);border-radius:10px;padding:11px;background:#fff;width:100%;min-width:0}
+  .hora{display:flex;gap:6px;min-width:0}
+  .hora input{flex:1;min-width:0;padding:11px 6px}
+  .hora button{flex:none;border:1px solid var(--borda);background:#f3f5f9;border-radius:10px;padding:0 10px;font-size:13px}
+  .iniciar{display:block;width:100%;border:0;border-radius:12px;padding:16px;background:var(--verde);color:#fff;font-weight:800;font-size:17px;margin-top:14px}
+  .titulo{font-size:15px;font-weight:700;color:var(--azul);margin:6px 4px 0}
+  .vcard{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:12px 14px;display:flex;justify-content:space-between;gap:10px;align-items:center}
+  .vcard b{display:block;font-size:15px}
+  .vcard .det{font-size:13px;color:var(--suave);margin-top:2px}
+  .vcard .acao{flex:none;border:1px solid var(--borda);background:#fff;border-radius:10px;padding:8px 12px;font-size:13px;font-weight:600;color:var(--azul2)}
+  .tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:999px;background:#d3efdf;color:#11683a;font-weight:700;margin-left:6px;vertical-align:middle}
+  .tag.and{background:#fff1c7;color:#7a5200}
+  .tripbar{margin-top:10px;width:100%;border:0;border-radius:10px;background:rgba(255,255,255,.14);color:#fff;text-align:left;padding:9px 12px;font-size:14px}
+  .finbar{position:fixed;left:0;right:0;bottom:62px;z-index:6;padding:8px 12px;background:linear-gradient(rgba(243,245,249,0),var(--fundo) 35%)}
+  .finbar button{width:100%;border:0;border-radius:12px;padding:14px;background:var(--vermelho);color:#fff;font-weight:800;font-size:16px;box-shadow:0 4px 12px rgba(0,0,0,.15)}
+  .resumo{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 10px}
+  .resumo div{background:#f3f5f9;border-radius:10px;padding:8px;text-align:center;font-size:12px;color:var(--suave)}
+  .resumo b{display:block;font-size:20px;color:var(--texto)}
+  .alerta{background:var(--amareloBg);border:1px solid #f1dca2;border-radius:10px;padding:10px;font-size:13px;margin-bottom:6px}
+  .opt{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:13px;color:var(--suave);background:#f3f5f9;border-radius:10px;padding:10px}
+  .opt input{width:20px;height:20px;flex:none;accent-color:var(--azul);margin-top:1px}
+  .opt b{color:var(--texto);font-size:14px}
+  .motbtn{line-height:1.15}
+  .escbloco{border-bottom:1px solid #eef1f6}
+  .escbloco:last-child{border-bottom:0}
+  .escbloco.on{background:#f8fafc}
+  .checks label.esclin{border-bottom:0;align-items:flex-start}
+  .esclin small{color:var(--suave);font-weight:400}
+  .escalunos{margin:0 0 8px 30px;background:#fff;border:1px solid var(--borda);border-radius:10px;overflow:hidden}
+  .escfiltro{display:flex;gap:6px;overflow-x:auto;padding:4px 16px 2px}
+  .escfiltro button{flex:none;border:1px solid var(--borda);background:#fff;border-radius:999px;padding:7px 12px;font-size:13px;white-space:nowrap}
+  .escfiltro button.on{background:var(--azul);color:#fff;border-color:var(--azul)}
+  .toast{position:fixed;left:50%;top:calc(10px + env(safe-area-inset-top));transform:translateX(-50%);background:#1d2633;color:#fff;padding:10px 16px;border-radius:999px;font-size:14px;z-index:30;box-shadow:0 4px 14px rgba(0,0,0,.25)}
+</style>
+</head>
+<body>
+<div id="app"><div class="carregando">Carregando…</div></div>
+<div class="fundoFolha" id="fundoFolha"></div>
+<div class="folha" id="folha"></div>
+
+<script>
+var INIT = { monitora: new URLSearchParams(location.search).get('m') || '' };
+var S = { monitora: '', senha: '', eq: null, aberta: null, estado: {}, hoje: [], fila: {}, modo: 'entrada', ida: {}, memo: {},
+          filtro: false, busca: '', enviando: false, timer: null, retry: null, offline: false, inicio: null, novo: null };
+
+/* ---------- utilidades ---------- */
+function ls(k, v) {
+  try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); }
+  catch (e) { return null; }
+}
+function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function sem(t) { return String(t).normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase(); }
+function agora() { var d = new Date(); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+function hojeLocal() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function chamar(fn) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  if (window.google && google.script && google.script.run) {
+    return new Promise(function (ok, falha) { var r = google.script.run.withSuccessHandler(ok).withFailureHandler(falha); r[fn].apply(r, args); });
+  }
+  // app instalável (GitHub Pages): fala com a mesma planilha pela API do Apps Script
+  if (!window.API_URL || !/^https?:\/\//.test(window.API_URL)) return Promise.reject(new Error('CONFIG: endereço da API não configurado no config.js'));
+  var ctrl = window.AbortController ? new AbortController() : null;
+  var t = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
+  return fetch(window.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ fn: fn, args: args }), redirect: 'follow', signal: ctrl ? ctrl.signal : undefined })
+    .then(function (r) { clearTimeout(t); if (!r.ok) throw new Error('Network ' + r.status); return r.text(); })
+    .then(function (txt) {
+      var j; try { j = JSON.parse(txt); } catch (x) { throw new Error('Resposta inesperada do Google (confira se a implantação está como "Qualquer pessoa"): ' + txt.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 120)); }
+      if (!j || !j.ok) throw new Error((j && j.erro) || 'Erro no servidor'); return j.data;
+    },
+          function (e) { clearTimeout(t); throw e; });
+}
+function msgErro(e) { return String((e && e.message) || e || ''); }
+/** Erro de rede (sem internet)? No iPhone aparece como "Load failed". */
+function semRede(e) { return navigator.onLine === false || /Load failed|Failed to fetch|NetworkError|Network |network|abort|internet/i.test(msgErro(e)); }
+function vazio() { return { entrada: false, horaE: '', kmE: '', saida: false, horaS: '', kmS: '', motivo: '', obs: '' }; }
+function K(a) { return a.escola + '¦' + a.aluno; }
+function $(id) { return document.getElementById(id); }
+function app(h) { $('app').innerHTML = h; window.scrollTo(0, 0); }
+function copia(o) { return JSON.parse(JSON.stringify(o)); }
+function temFila() { return Object.keys(S.fila).length > 0; }
+function guardarFila() { ls('fila|' + S.monitora, temFila() ? JSON.stringify(S.fila) : null); }
+function lerFila() { var f = ls('fila|' + S.monitora); try { return f ? JSON.parse(f) : {}; } catch (e) { return {}; } }
+function foto() { if (S.eq) ls('snap|' + S.monitora, JSON.stringify({ eq: S.eq, aberta: S.aberta, estado: S.estado, hoje: S.hoje, ida: S.ida, memo: S.memo })); }
+function toast(t) { var d = document.createElement('div'); d.className = 'toast'; d.textContent = t; document.body.appendChild(d); setTimeout(function () { d.remove(); }, 2600); }
+function kmBR(n) { return (n === '' || n == null || isNaN(n)) ? '' : Number(n).toLocaleString('pt-BR'); }
+function tratarErro(e, tentar) {
+  var m = msgErro(e);
+  if (m.indexOf('SENHA') >= 0) { telaSenha(tentar, !!S.senha); return true; }
+  return false;
+}
+
+/* ---------- início ---------- */
+function iniciar() {
+  S.senha = ls('senhaMon') || '';
+  S.monitora = INIT.monitora || ls('monitora') || '';
+  S.modo = new Date().getHours() < 11 ? 'entrada' : 'saida';
+  if (S.monitora) carregar(); else abrirDados(null);
+}
+
+function telaSenha(depois, erro) {
+  app('<div class="tela"><h1>Checklist do Ônibus</h1><p class="p">Acesso das monitoras</p>' +
+    '<label class="rot">Senha</label><input id="senha" class="campo" type="password" autocomplete="off">' +
+    '<div class="msg">' + (erro ? 'Senha incorreta. Tente de novo.' : '') + '</div>' +
+    '<button class="grande" id="entrar">Entrar</button></div>');
+  var ir = function () { S.senha = $('senha').value.trim(); ls('senhaMon', S.senha); depois(); };
+  $('entrar').onclick = ir;
+  $('senha').onkeydown = function (e) { if (e.key === 'Enter') ir(); };
+  $('senha').focus();
+}
+
+function telaErro(texto, tentar) {
+  app('<div class="tela"><h1>Ops…</h1><p class="p">' + esc(texto) + '</p><button class="grande" id="tentar">Tentar de novo</button></div>');
+  $('tentar').onclick = tentar;
+}
+
+/* ---------- MEUS DADOS (uma tela: dados + escolas + alunos) ---------- */
+var F = null;        // formulário em edição
+var CACHE = {};      // escola -> lista de alunos (ou 'carregando')
+
+function abrirDados(aviso) {
+  var cache = null;
+  try { cache = JSON.parse(ls('inicio') || 'null'); } catch (x) { cache = null; }
+  var montar = function (ini) {
+    S.inicio = ini;
+    guardarAlunos(ini);
+    F = { monitora: '', escolas: [], prefixo: '', motorista: '', rota: '', alunos: {}, buscaEsc: '', buscaAl: '' };
+    if (S.eq) preencherF(S.eq);
+    desenharDados(aviso);
+    carregarEscolas(F.escolas);
+    var nome = S.eq ? S.eq.monitora : S.monitora;
+    if (!S.eq && nome && ini.monitoras.indexOf(nome) >= 0) { F.monitora = nome; $('dNome').value = nome; buscarEquipe(nome); }
+  };
+  if (cache) montar(cache); else app('<div class="carregando">Carregando listas…</div>');
+  chamar('apiInicio', S.senha).then(function (ini) {
+    ls('inicio', JSON.stringify(ini));
+    if (!cache) return montar(ini);
+    if (JSON.stringify(ini) !== JSON.stringify(cache) && $('dEscolas')) { S.inicio = ini; guardarAlunos(ini); var y = window.scrollY; desenharDados(aviso); window.scrollTo(0, y); }
+  }).catch(function (e) {
+    if (tratarErro(e, function () { abrirDados(aviso); })) return;
+    if (!cache) telaErro(semRede(e)
+      ? 'Sem internet. Este ícone ainda não tem os seus dados: abra-o UMA vez com internet (senha + seu nome) e espere "Tudo salvo ✓". Depois ele funciona sem internet.'
+      : 'Não consegui conectar (' + msgErro(e).slice(0, 120) + ').', function () { abrirDados(aviso); });
+  });
+}
+
+function preencherF(eq) {
+  F.monitora = eq.monitora; F.escolas = eq.escolas.slice(); F.prefixo = eq.prefixo; F.motorista = eq.motorista || ''; F.rota = eq.rota;
+  F.alunos = {}; eq.alunos.forEach(function (a) { F.alunos[K(a)] = a; });
+}
+
+function buscarEquipe(nome) {
+  chamar('apiEquipe', nome, S.senha).then(function (eq) {
+    if (!eq || !F || F.monitora !== nome) return;
+    if (!S.eq) {   // primeiro acesso neste celular: já usa os dados salvos, sem marcar de novo
+      S.monitora = nome; ls('monitora', nome);
+      carregar();
+      setTimeout(function () { toast('Seus dados e alunos foram carregados ✓'); }, 600);
+      return;
+    }
+    preencherF(eq); desenharDados('Encontrei os seus dados salvos. Confira e salve.'); carregarEscolas(F.escolas);
+  }).catch(function () {});
+}
+
+/** Alunos de todas as escolas já vêm junto com as listas (um pedido só). */
+function guardarAlunos(ini) {
+  if (!ini || !Array.isArray(ini.alunos)) return;
+  var novo = {};
+  (ini.escolas || []).forEach(function (e) { novo[e] = []; });
+  ini.alunos.forEach(function (a) { (novo[a.escola] || (novo[a.escola] = [])).push(a); });
+  CACHE = novo;
+}
+
+/** Busca os alunos das escolas que ainda não estão em memória. */
+function carregarEscolas(lista) {
+  var faltam = lista.filter(function (e) { return !CACHE[e]; });
+  if (!faltam.length) return;
+  faltam.forEach(function (e) { CACHE[e] = 'carregando'; });
+  desenharEscolas();
+  chamar('apiAlunos', faltam, S.senha).then(function (alunos) {
+    faltam.forEach(function (e) { CACHE[e] = []; });
+    alunos.forEach(function (a) { CACHE[a.escola].push(a); });
+    desenharEscolas();
+  }).catch(function (e) {
+    faltam.forEach(function (x) { delete CACHE[x]; });
+    if (tratarErro(e, function () { abrirDados(); })) return;
+    if ($('dMsg')) $('dMsg').innerHTML = 'Não consegui carregar os alunos (' + esc(msgErro(e).slice(0, 160)) + '). ' +
+      '<button class="link" id="dTentar">Tentar de novo</button>';
+    if ($('dTentar')) $('dTentar').onclick = function () { $('dMsg').textContent = ''; carregarEscolas(F.escolas); };
+    desenharEscolas();
+  });
+}
+
+function desenharDados(aviso) {
+  var ini = S.inicio;
+  var h = '<div class="tela"><h1>Meus dados</h1><p class="p">' + esc(aviso || 'Preencha uma vez. O celular lembra e você pode mudar quando quiser.') + '</p>';
+  h += '<label class="rot" for="dNome">Seu nome</label><select id="dNome" class="campo"><option value="">Escolha o seu nome…</option>';
+  ini.monitoras.forEach(function (m) { h += '<option' + (m === F.monitora ? ' selected' : '') + '>' + esc(m) + '</option>'; });
+  h += '</select>';
+  h += '<label class="rot" for="dMot">Motorista</label><select id="dMot" class="campo"><option value="">Escolha o motorista…</option>';
+  (ini.motoristas || []).forEach(function (m) { h += '<option' + (m === F.motorista ? ' selected' : '') + '>' + esc(m) + '</option>'; });
+  h += '</select>';
+  h += '<label class="rot" for="dPref">Veículo (prefixo)</label><select id="dPref" class="campo"><option value="">Escolha o prefixo…</option>';
+  ini.veiculos.forEach(function (v) { h += '<option value="' + esc(v.prefixo) + '"' + (v.prefixo === F.prefixo ? ' selected' : '') + '>' + esc(v.prefixo + (v.desc ? ' – ' + v.desc : '')) + '</option>'; });
+  h += '</select>';
+  h += '<label class="rot" for="dRota">Rota</label><input id="dRota" class="campo" placeholder="Ex.: Bairro Santa Rosa → Escola" value="' + esc(F.rota) + '">';
+  h += '<label class="rot">Escolas e alunos</label><p class="p" style="margin:0 0 8px">Marque a escola: os alunos dela aparecem logo abaixo para você marcar quem anda no seu veículo.</p>';
+  if (ini.escolas.length > 6) h += '<input id="dBusca" class="campo" placeholder="Buscar escola…" style="margin-bottom:8px" value="' + esc(F.buscaEsc) + '">';
+  h += '<input id="dBuscaAl" class="campo" placeholder="Buscar aluno nas escolas marcadas…" style="margin-bottom:8px" value="' + esc(F.buscaAl) + '">';
+  h += '<div class="checks" id="dEscolas" style="max-height:none"></div>';
+  h += '<div class="novo" id="dNovo"></div>';
+  h += '<div class="msg" id="dMsg"></div></div>';
+  h += '<div class="barra"' + (S.eq ? '' : ' style="grid-template-columns:1fr"') + '>' + (S.eq ? '<button class="grande claro" id="dVoltar">Cancelar</button>' : '') +
+       '<button class="grande" id="dSalvar">Salvar</button></div>';
+  app(h);
+  desenharEscolas();
+  $('dNome').onchange = function () { F.monitora = this.value; if (F.monitora) buscarEquipe(F.monitora); };
+  if ($('dBusca')) $('dBusca').oninput = function () { F.buscaEsc = this.value; desenharEscolas(); };
+  $('dBuscaAl').oninput = function () { F.buscaAl = this.value; desenharEscolas(); };
+  $('dPref').onchange = function () { F.prefixo = this.value; };
+  $('dMot').onchange = function () { F.motorista = this.value; };
+  $('dRota').oninput = function () { F.rota = this.value; };
+  if ($('dVoltar')) $('dVoltar').onclick = function () { principal(); };
+  $('dSalvar').onclick = salvarEquipe;
+}
+
+/** Alunos de uma escola: cadastro + os já marcados/incluídos pela monitora. */
+function alunosDa(escola) {
+  var base = Array.isArray(CACHE[escola]) ? CACHE[escola].slice() : [];
+  var tem = {}; base.forEach(function (a) { tem[K(a)] = true; });
+  Object.keys(F.alunos).forEach(function (k) { var a = F.alunos[k]; if (a.escola === escola && !tem[k]) { base.push(a); tem[k] = true; } });
+  return base.sort(function (a, b) { return a.aluno.localeCompare(b.aluno, 'pt'); });
+}
+
+function desenharEscolas() {
+  if (!$('dEscolas')) return;
+  var qE = sem(F.buscaEsc || ''), qA = sem(F.buscaAl || '');
+  var marcadas = F.escolas.slice();
+  var outras = S.inicio.escolas.filter(function (e) { return marcadas.indexOf(e) < 0 && (!qE || sem(e).indexOf(qE) >= 0); });
+  var h = '';
+  marcadas.concat(outras).forEach(function (e) {
+    var i = S.inicio.escolas.indexOf(e);
+    var on = marcadas.indexOf(e) >= 0;
+    var lista = on ? alunosDa(e) : [];
+    var n = lista.filter(function (a) { return F.alunos[K(a)]; }).length;
+    h += '<div class="escbloco' + (on ? ' on' : '') + '"><label class="esclin"><input type="checkbox" data-e="' + i + '"' + (on ? ' checked' : '') + '>' +
+      '<span><b>' + esc(e) + '</b>' + (on ? '<br><small>' + n + ' aluno(s) marcado(s)</small>' : '') + '</span></label>';
+    if (on) {
+      h += '<div class="escalunos">';
+      if (CACHE[e] === 'carregando') h += '<div class="vazio" style="padding:10px">Carregando alunos…</div>';
+      else if (!lista.length) h += '<div class="vazio" style="padding:10px">Nenhum aluno cadastrado nesta escola. Inclua abaixo.</div>';
+      else {
+        var vis = lista.filter(function (a) { return !qA || sem(a.aluno).indexOf(qA) >= 0; });
+        h += '<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;padding:4px 12px"><span class="contador" style="margin:0">' + lista.length + ' aluno(s) na escola</span>' +
+          '<button class="link" data-todos="' + i + '">' + (n === lista.length ? 'Desmarcar todos' : 'Marcar todos') + '</button></div>';
+        if (!vis.length) h += '<div class="vazio" style="padding:10px">Nenhum aluno com esse nome.</div>';
+        vis.forEach(function (a) { h += '<label><input type="checkbox" data-k="' + esc(K(a)) + '"' + (F.alunos[K(a)] ? ' checked' : '') + '>' + esc(a.aluno) + '</label>'; });
+      }
+      h += '</div>';
+    }
+    h += '</div>';
+  });
+  $('dEscolas').innerHTML = h || '<div class="vazio">Nenhuma escola encontrada.</div>';
+  var total = Object.keys(F.alunos).length;
+  $('dSalvar').textContent = 'Salvar (' + total + ' aluno' + (total === 1 ? '' : 's') + ')';
+  desenharNovo();
+
+  Array.prototype.forEach.call($('dEscolas').querySelectorAll('input[data-e]'), function (c) {
+    c.onchange = function () {
+      var e = S.inicio.escolas[+c.getAttribute('data-e')];
+      var p = F.escolas.indexOf(e);
+      if (c.checked && p < 0) { F.escolas.push(e); carregarEscolas([e]); }
+      if (!c.checked && p >= 0) {
+        var marcados = Object.keys(F.alunos).filter(function (k) { return F.alunos[k].escola === e; });
+        if (marcados.length && !confirm('Desmarcar a escola tira os ' + marcados.length + ' aluno(s) marcados dela. Continuar?')) { c.checked = true; return; }
+        F.escolas.splice(p, 1);
+        marcados.forEach(function (k) { delete F.alunos[k]; });
+      }
+      desenharEscolas();
+    };
+  });
+  Array.prototype.forEach.call($('dEscolas').querySelectorAll('input[data-k]'), function (c) {
+    c.onchange = function () {
+      var k = c.getAttribute('data-k');
+      var p = k.indexOf('¦');
+      if (c.checked) F.alunos[k] = { escola: k.slice(0, p), aluno: k.slice(p + 1) }; else delete F.alunos[k];
+      desenharEscolas();
+    };
+  });
+  Array.prototype.forEach.call($('dEscolas').querySelectorAll('[data-todos]'), function (b) {
+    b.onclick = function (ev) {
+      ev.preventDefault();
+      var e = S.inicio.escolas[+b.getAttribute('data-todos')];
+      var lista = alunosDa(e);
+      var todos = lista.every(function (a) { return F.alunos[K(a)]; });
+      lista.forEach(function (a) { if (todos) delete F.alunos[K(a)]; else F.alunos[K(a)] = a; });
+      desenharEscolas();
+    };
+  });
+}
+
+function desenharNovo() {
+  var box = $('dNovo');
+  if (!box) return;
+  if (!F.escolas.length) { box.style.display = 'none'; return; }
+  box.style.display = '';
+  var nomeAtual = $('nNome') ? $('nNome').value : '';
+  box.innerHTML = '<b style="font-size:14px">Incluir aluno que não está na lista</b>' +
+    '<input id="nNome" class="campo" placeholder="Nome completo do aluno" value="' + esc(nomeAtual) + '">' +
+    (F.escolas.length > 1 ? '<select id="nEsc" class="campo">' + F.escolas.map(function (e) { return '<option>' + esc(e) + '</option>'; }).join('') + '</select>' : '') +
+    '<button class="grande claro" id="nAdd" style="margin:0">+ Incluir aluno</button>';
+  $('nAdd').onclick = function () {
+    var nome = $('nNome').value.replace(/\s+/g, ' ').trim();
+    if (nome.length < 3) { $('dMsg').textContent = 'Digite o nome completo do aluno.'; return; }
+    var escola = $('nEsc') ? $('nEsc').value : F.escolas[0];
+    var a = { escola: escola, aluno: nome };
+    F.alunos[K(a)] = a;
+    $('nNome').value = ''; $('dMsg').textContent = '';
+    desenharEscolas();
+    toast('Aluno incluído e marcado ✓');
+  };
+}
+
+function salvarEquipe() {
+  var erro = !F.monitora ? 'Escolha o seu nome.' : !F.prefixo ? 'Escolha o prefixo do veículo.' :
+    (!F.motorista && (S.inicio.motoristas || []).length) ? 'Escolha o motorista.' : !F.escolas.length ? 'Marque pelo menos uma escola.' : '';
+  var alunos = Object.keys(F.alunos).map(function (k) { return F.alunos[k]; }).filter(function (a) { return F.escolas.indexOf(a.escola) >= 0; });
+  if (!erro && !alunos.length) erro = 'Marque pelo menos um aluno.';
+  if (erro) { $('dMsg').textContent = erro; $('dMsg').scrollIntoView({ block: 'center' }); return; }
+  $('dSalvar').disabled = true; $('dSalvar').textContent = 'Salvando…';
+  chamar('apiSalvarEquipe', { monitora: F.monitora, escolas: F.escolas, prefixo: F.prefixo, motorista: F.motorista, rota: F.rota, alunos: alunos }, S.senha)
+    .then(function () {
+      S.monitora = F.monitora; ls('monitora', S.monitora);
+      carregar();
+    }).catch(function (e) {
+      if (tratarErro(e, salvarEquipe)) return;
+      $('dSalvar').disabled = false; desenharEscolas();
+      $('dMsg').textContent = /internet|Network|conex/i.test(msgErro(e)) ? 'Sem internet. Tente de novo quando tiver sinal.' : msgErro(e);
+    });
+}
+
+/* ---------- carregar o dia (abre na hora com o que está no celular e atualiza em segundo plano) ---------- */
+function lerSnap() { try { return JSON.parse(ls('snap|' + S.monitora) || 'null'); } catch (x) { return null; } }
+
+function deSnap(snap) {
+  var d = copia(snap.eq); d.aberta = snap.aberta; d.registros = snap.estado; d.viagensHoje = snap.hoje; d.registrosIda = snap.ida || {};
+  if (d.data !== hojeLocal()) { d.data = hojeLocal(); d.dataBR = d.data.split('-').reverse().join('/'); d.viagensHoje = []; }
+  return d;
+}
+
+function naTelaPrincipal() { return !!$('nV'); }
+
+function carregar() {
+  S.fila = lerFila();
+  var snap = lerSnap();
+  var rapido = !!(snap && snap.eq);   // qualquer dia: abre com o que está no celular (vira o dia sozinho)
+  if (rapido) { aplicar(deSnap(snap), true); status('Atualizando…'); }
+  else app('<div class="carregando">Carregando…</div>');
+  chamar('apiCarregar', S.monitora, S.senha).then(function (d) {
+    S.offline = false;
+    if (!rapido) return aplicar(d);
+    if (naTelaPrincipal() && !$('folha').style.display.match(/block/)) {
+      var y = window.scrollY; aplicar(d); window.scrollTo(0, y);
+    } else { aplicarSilencioso(d); }
+    if (!temFila()) status('Tudo salvo ✓');
+  }).catch(function (e) {
+    var m = msgErro(e);
+    if (tratarErro(e, carregar)) return;
+    if (m.indexOf('MONITORA') >= 0) { ls('monitora', null); S.monitora = ''; S.eq = null; return abrirDados('Seu nome não está mais na lista. Escolha de novo.'); }
+    if (m.indexOf('EQUIPE') >= 0) { S.eq = null; return abrirDados('Primeiro, preencha os seus dados.'); }
+    if (m.indexOf('CONFIG') >= 0) return telaErro('O app ainda não foi configurado (config.js). Avise quem administra.', carregar);
+    if (rapido) { S.offline = true; status('Sem internet – salvando no celular', true); agendarRetry(); return; }
+    telaErro(semRede(e)
+      ? 'Você está sem internet e este celular ainda não tem os seus dados. Abra o app UMA vez com internet (por este mesmo ícone), confira seus dados e depois ele funciona sem internet.'
+      : 'Não consegui carregar (' + m.slice(0, 120) + '). Verifique a internet.', carregar);
+  });
+}
+
+/** Atualiza os dados vindos do servidor sem mexer na tela (ex.: com uma janela aberta). */
+function aplicarSilencioso(d) {
+  var tela = !!S.aberta;
+  S.eq = Object.assign({}, d, { registros: undefined });
+  var hojeSrv = (d.viagensHoje || []).slice();
+  hojeSrv.forEach(function (v) { if (!S.fila[v.id]) atualizarHoje(v); });
+  if (d.aberta && S.aberta && d.aberta.id === S.aberta.id) {
+    Object.keys(d.registros || {}).forEach(function (k) { var f = S.fila[S.aberta.id]; if (!f || !f.mud[k]) S.estado[k] = d.registros[k]; });
+    if (d.registrosIda && Object.keys(d.registrosIda).length) S.ida = d.registrosIda;
+  }
+  foto();
+  if (tela === !!S.aberta && $('lista')) { desenharContas(); desenharLista(); }
+}
+
+/** Junta o que veio do servidor com o que ainda está na fila do celular. */
+function aplicar(d, local) {
+  S.eq = d;
+  S.aberta = d.aberta || null;
+  S.estado = d.registros || {};
+  S.hoje = (d.viagensHoje || []).slice();
+  S.ida = d.registrosIda || {};
+  S.memo = {};
+  try { var sn = JSON.parse(ls('snap|' + S.monitora) || 'null'); if (sn && sn.eq && sn.eq.data === d.data && sn.memo) S.memo = sn.memo; } catch (x) {}
+  Object.keys(S.fila).forEach(function (id) {
+    var f = S.fila[id];
+    if (!f.viagem) return;
+    if (f.viagem.data === S.eq.data) atualizarHoje(f.viagem);
+    if (f.viagem.status === 'Em andamento') {
+      if (!S.aberta || S.aberta.id !== id) { S.aberta = copia(f.viagem); S.estado = {}; }
+      else S.aberta = copia(f.viagem);
+    } else if (S.aberta && S.aberta.id === id) { S.aberta = null; S.estado = {}; }
+    if (S.aberta && S.aberta.id === id) Object.keys(f.mud).forEach(function (k) { S.estado[k] = f.mud[k]; });
+  });
+  if (S.aberta && S.aberta.vinculo && !Object.keys(S.ida).length && S.memo[S.aberta.vinculo]) S.ida = S.memo[S.aberta.vinculo];
+  var mm = String(ls('modo|' + S.monitora) || '').split('|');
+  if (S.aberta && mm[0] === S.aberta.id && (mm[1] === 'entrada' || mm[1] === 'saida')) S.modo = mm[1];
+  foto();
+  principal();
+  if (temFila() && !local) enviar();
+}
+
+function atualizarHoje(v) {
+  var i = -1;
+  S.hoje.forEach(function (x, j) { if (x.id === v.id) i = j; });
+  var c = copia(v);
+  if (i >= 0) S.hoje[i] = Object.assign({}, S.hoje[i], c); else S.hoje.push(c);
+  S.hoje.sort(function (a, b) { return (a.horaInicio || '').localeCompare(b.horaInicio || ''); });
+}
+
+/* ---------- tela principal ---------- */
+function principal() {
+  var d = S.eq;
+  app('<div class="topo"><div class="linha1"><div><div class="nome">' + esc(d.monitora) + '</div>' +
+      '<div class="sub">Prefixo ' + esc(d.prefixo) + (d.rota ? ' • ' + esc(d.rota) : '') + '</div>' +
+      '<div class="sub">Motorista: ' + esc((S.aberta && S.aberta.motorista) || d.motorista || '—') + '</div>' +
+      '<div class="sub">📅 ' + esc(d.dataBR) + '</div></div>' +
+      '<div class="status" id="status">Tudo salvo ✓</div></div><div id="topoExtra"></div></div>' +
+    '<div id="corpo"></div><div id="rodapeExtra"></div>' +
+    '<div class="nav" style="grid-template-columns:1fr 1fr"><button id="nV" class="on"><b>🚌</b>Viagem</button><button id="nDados"><b>⚙️</b>Meus dados</button></div>');
+  $('nV').onclick = function () { principal(); };
+  $('nDados').onclick = function () {
+    if (S.aberta) { alert('Finalize a viagem em andamento antes de mudar os seus dados.'); return; }
+    abrirDados();
+  };
+  if (S.aberta) telaViagem(); else telaInicio();
+  if (S.offline) status('Sem internet – salvando no celular', true);
+  else if (temFila()) status('Salvando…');
+}
+
+function periodoAgora() { var h = new Date().getHours(); return h < 12 ? 'Manhã' : h < 18 ? 'Tarde' : 'Noite'; }
+var LISTA_PERIODOS = ['Manhã', 'Tarde', 'Noite'];
+var LISTA_SENTIDOS = ['Ida (casa → escola)', 'Volta (escola → casa)'];
+function curto(sentido) { return String(sentido).split(' (')[0]; }
+
+/* ---------- sem viagem aberta: iniciar + viagens de hoje ---------- */
+function telaInicio() {
+  $('topoExtra').innerHTML = '';
+  $('rodapeExtra').innerHTML = '';
+  if (!S.novo) {
+    var p = periodoAgora();
+    var jaIda = S.hoje.some(function (v) { return v.periodo === p && curto(v.sentido) === 'Ida'; });
+    S.novo = { periodo: p, sentido: jaIda ? LISTA_SENTIDOS[1] : LISTA_SENTIDOS[0], horaInicio: '', kmInicial: '', motorista: S.eq.motorista || '' };
+  }
+  var n = S.novo;
+  var h = '<div class="bloco"><div class="cartao"><h3>Nova viagem</h3>' +
+    '<span class="rot2">Período</span><div class="seg c3" id="sPer">' + LISTA_PERIODOS.map(function (p) {
+      return '<button data-v="' + p + '" class="' + (n.periodo === p ? 'on' : '') + '">' + p + '</button>'; }).join('') + '</div>' +
+    '<span class="rot2">Sentido</span><div class="seg c1" id="sSen">' + LISTA_SENTIDOS.map(function (x) {
+      return '<button data-v="' + esc(x) + '" class="' + (n.sentido === x ? 'on' : '') + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
+    '<div class="grade" style="margin-top:12px"><label>Hora de início<span class="hora"><input type="time" id="iHora" value="' + esc(n.horaInicio || agora()) + '"><button id="iAgora">Agora</button></span></label>' +
+    '<label>KM inicial (opcional)<input inputmode="decimal" id="iKm" placeholder="Ex.: 45230" value="' + esc(n.kmInicial) + '"></label></div>' +
+    '<div class="msg" id="iMsg"></div>' +
+    '<button class="iniciar" id="iIr">▶ Iniciar viagem</button></div>';
+  h += '<div class="titulo">Viagens de hoje</div>';
+  if (!S.hoje.length) h += '<div class="vazio" style="padding:14px">Nenhuma viagem ainda hoje.</div>';
+  S.hoje.forEach(function (v) {
+    var fin = v.status === 'Finalizada';
+    var det = (v.horaInicio || '--:--') + ' → ' + (fin ? (v.horaFim || '--:--') : 'em andamento');
+    var cont = (v.alunos ? (v.entraram || 0) + ' entraram • ' + (v.sairam || 0) + ' saíram' : '');
+    var km = [(v.kmInicial !== '' && v.kmInicial != null) ? 'KM inicial ' + kmBR(v.kmInicial) : '', (v.kmFinal !== '' && v.kmFinal != null) ? 'KM final ' + kmBR(v.kmFinal) : ''].filter(String).join(' • ');
+    h += '<div class="vcard"><div><b>' + esc(v.periodo) + ' • ' + esc(curto(v.sentido)) +
+      '<span class="tag' + (fin ? '' : ' and') + '">' + (fin ? 'Finalizada' : 'Em andamento') + '</span></b>' +
+      '<div class="det">' + esc(det) + (v.motorista ? ' • ' + esc(v.motorista) : '') + '</div><div class="det">' + esc([cont, km].filter(String).join(' • ')) + '</div></div>' +
+      (fin ? '<button class="acao" data-corrigir="' + esc(v.id) + '">Corrigir</button>' : '') + '</div>';
+  });
+  h += '</div>';
+  $('corpo').innerHTML = h;
+  Array.prototype.forEach.call($('sPer').querySelectorAll('button'), function (b) { b.onclick = function () { lerNovo(); S.novo.periodo = b.getAttribute('data-v'); telaInicio(); }; });
+  Array.prototype.forEach.call($('sSen').querySelectorAll('button'), function (b) { b.onclick = function () { lerNovo(); S.novo.sentido = b.getAttribute('data-v'); telaInicio(); }; });
+  $('iAgora').onclick = function () { $('iHora').value = agora(); };
+  $('iIr').onclick = iniciarViagem;
+  Array.prototype.forEach.call($('corpo').querySelectorAll('[data-corrigir]'), function (b) {
+    b.onclick = function () { corrigir(b.getAttribute('data-corrigir')); };
+  });
+}
+
+function lerNovo() { S.novo.horaInicio = $('iHora').value; S.novo.kmInicial = $('iKm').value; }
+function selMotorista(id, atual) {
+  var lista = (S.eq.motoristas || []).slice();
+  if (atual && lista.indexOf(atual) < 0) lista.unshift(atual);
+  return '<select id="' + id + '" class="campo">' + (lista.length ? '' : '<option value="">(nenhum motorista cadastrado)</option>') +
+    lista.map(function (m) { return '<option' + (m === atual ? ' selected' : '') + '>' + esc(m) + '</option>'; }).join('') + '</select>';
+}
+
+function novoId() {
+  var d = new Date(), z = function (n) { return ('0' + n).slice(-2); };
+  return 'V' + d.getFullYear() + z(d.getMonth() + 1) + z(d.getDate()) + '-' + z(d.getHours()) + z(d.getMinutes()) + z(d.getSeconds()) +
+    '-' + Math.random().toString(36).slice(2, 7);
+}
+
+function iniciarViagem() {
+  lerNovo();
+  var km = num(S.novo.kmInicial);
+  if (isNaN(km)) { $('iMsg').textContent = 'Confira o KM: use só números.'; return; }
+  var v = { id: novoId(), data: S.eq.data, periodo: S.novo.periodo, sentido: S.novo.sentido,
+            horaInicio: S.novo.horaInicio || agora(), horaFim: '', kmInicial: km, kmFinal: '', status: 'Em andamento', obs: '',
+            alunos: S.eq.alunos.length, entraram: 0, sairam: 0, motorista: S.eq.motorista || '' };
+  var idas = /^Volta/.test(v.sentido) ? S.hoje.filter(function (x) {
+    return /^Ida/.test(x.sentido) && x.status === 'Finalizada' && !S.hoje.some(function (y) { return y.vinculo === x.id; });
+  }) : [];
+  if (idas.length) perguntarVinculo(v, idas); else comecar(v, null);
+}
+
+/** Na volta: pergunta se ela é a volta de uma ida feita mais cedo. */
+function perguntarVinculo(v, idas) {
+  var h = '<h2>Esta volta é da ida que você fez mais cedo?</h2>' +
+    '<div class="sub">Se for, o app confere cada aluno: quem entrou na ida precisa ter a saída nesta volta.</div><div class="opcoes">';
+  idas.slice().reverse().forEach(function (x, i) {
+    h += '<button class="opcao" data-ida="' + esc(x.id) + '"><b>🔗 Sim – ' + esc(x.periodo) + ' • Ida</b><br><small>' + esc((x.horaInicio || '--:--') + ' → ' + (x.horaFim || '--:--')) +
+      ' • ' + (x.entraram || 0) + ' aluno(s) entraram' + (x.motorista ? ' • ' + esc(x.motorista) : '') + '</small></button>';
+  });
+  h += '<button class="opcao" id="vNao"><b>Não, é uma viagem separada</b></button></div>';
+  abrirFolha(h);
+  Array.prototype.forEach.call($('folha').querySelectorAll('[data-ida]'), function (b) {
+    b.onclick = function () { var id = b.getAttribute('data-ida'); fecharFolha(); comecar(v, idas.filter(function (x) { return x.id === id; })[0]); };
+  });
+  $('vNao').onclick = function () { fecharFolha(); comecar(v, null); };
+  $('fundoFolha').onclick = null;
+}
+
+function comecar(v, ida) {
+  if (ida) v.vinculo = ida.id;
+  S.aberta = v; S.estado = {}; S.modo = ida ? 'saida' : 'entrada'; S.busca = ''; S.filtro = false; S.novo = null;
+  S.ida = ida ? (S.memo[ida.id] || {}) : {};
+  atualizarHoje(v);
+  enfileirar(v);
+  principal();
+  toast(ida ? 'Volta vinculada à ida das ' + (ida.horaInicio || '') + ' ✓' : 'Viagem iniciada às ' + v.horaInicio);
+  if (ida && !S.memo[ida.id]) {
+    chamar('apiRegistros', S.monitora, ida.id, S.senha).then(function (r) {
+      if (S.aberta && S.aberta.vinculo === ida.id) { S.ida = r.registros || {}; foto(); if ($('lista')) desenhar(); }
+    }).catch(function () { toast('Sem internet: os alunos da ida aparecem quando conectar.'); });
+  }
+}
+
+function idaDe(id) { return S.hoje.filter(function (x) { return x.id === id; })[0] || null; }
+function vinculada() { return !!(S.aberta && S.aberta.vinculo); }
+function veioIda(a) { var r = S.ida[K(a)]; return !!(r && r.entrada); }
+
+function corrigir(id) {
+  if (S.aberta) return;
+  if (!confirm('Reabrir esta viagem para corrigir?')) return;
+  if (S.fila[id] && S.fila[id].viagem) S.fila[id].viagem.status = 'Em andamento';
+  status('Abrindo…');
+  chamar('apiReabrir', S.monitora, id, S.senha).then(function (r) {
+    S.aberta = r.viagem; S.estado = r.registros || {}; S.ida = r.registrosIda || {};
+    if (S.fila[id]) Object.keys(S.fila[id].mud).forEach(function (k) { S.estado[k] = S.fila[id].mud[k]; });
+    S.aberta.status = 'Em andamento';
+    atualizarHoje(S.aberta);
+    S.modo = S.aberta.vinculo ? 'saida' : 'entrada'; foto(); guardarFila(); principal();
+  }).catch(function (e) {
+    if (tratarErro(e, function () { corrigir(id); })) return;
+    if (S.fila[id] && S.fila[id].viagem) S.fila[id].viagem.status = 'Finalizada';
+    status(temFila() ? 'Salvando…' : 'Tudo salvo ✓');
+    alert('Para corrigir uma viagem já finalizada é preciso estar com internet.');
+  });
+}
+
+/* ---------- viagem em andamento ---------- */
+function telaViagem() {
+  var v = S.aberta;
+  $('topoExtra').innerHTML = '<button class="tripbar" id="tb">🚌 <b>' + esc(v.periodo) + ' • ' + esc(curto(v.sentido)) + '</b> • início ' +
+    esc(v.horaInicio || '--:--') + (v.kmInicial !== '' && v.kmInicial != null ? ' • KM ' + kmBR(v.kmInicial) : '') +
+    (v.vinculo ? '<br>🔗 Volta da ida das ' + esc((idaDe(v.vinculo) || {}).horaInicio || '?') : '') + '  ✎</button>' +
+    '<div class="modo"><button id="mE">🚌 ENTRADA</button><button id="mS">🏠 SAÍDA</button></div><div class="contas" id="contas"></div>';
+  $('corpo').innerHTML = '<div class="ferramentas"><input class="busca" id="busca" placeholder="Buscar aluno…" autocomplete="off" value="' + esc(S.busca) + '">' +
+    '<button class="filtro" id="filtro">Faltando</button></div><div class="escfiltro" id="escF"></div><div class="dica" id="dica"></div><div class="lista" id="lista" style="padding-bottom:150px"></div>';
+  $('rodapeExtra').innerHTML = '<div class="finbar"><button id="fin">■ Finalizar viagem</button></div>';
+  $('tb').onclick = editarInicio;
+  $('fin').onclick = abrirFinalizar;
+  $('mE').onclick = function () { S.modo = 'entrada'; desenhar(); };
+  $('mS').onclick = function () { S.modo = 'saida'; desenhar(); };
+  $('busca').oninput = function () { S.busca = this.value; desenharLista(); };
+  $('filtro').onclick = function () { S.filtro = !S.filtro; desenhar(); };
+  if (S.eq.escolas.length > 1) {
+    if (S.eq.escolas.indexOf(S.escolaF) < 0) S.escolaF = '';
+    $('escF').innerHTML = ['Todas as escolas'].concat(S.eq.escolas).map(function (e, i) {
+      return '<button data-ef="' + i + '" class="' + ((i === 0 ? !S.escolaF : S.escolaF === e) ? 'on' : '') + '">' + esc(e) + '</button>'; }).join('');
+    Array.prototype.forEach.call($('escF').querySelectorAll('button'), function (b) {
+      b.onclick = function () {
+        var i = +b.getAttribute('data-ef'); S.escolaF = i ? S.eq.escolas[i - 1] : '';
+        Array.prototype.forEach.call($('escF').children, function (x) { x.classList.toggle('on', x === b); });
+        desenharLista();
+      };
+    });
+  } else S.escolaF = '';
+  $('lista').onchange = function (ev) {
+    var inp = ev.target; if (!inp.getAttribute || inp.getAttribute('data-km') === null) return;
+    var a = S.eq.alunos[+inp.getAttribute('data-km')];
+    var km = num(inp.value);
+    if (isNaN(km)) { inp.value = ''; toast('KM: use só números'); return; }
+    var ent = S.modo === 'entrada';
+    inp.blur();
+    alterar(a, function (x) {
+      if (ent) { x.kmE = km; if (km !== '' && !x.entrada) { x.entrada = true; x.horaE = agora(); } }
+      else { x.kmS = km; if (km !== '' && !x.saida) { x.saida = true; x.horaS = agora(); } }
+    });
+  };
+  $('lista').onkeydown = function (ev) { if (ev.key === 'Enter' && ev.target.getAttribute && ev.target.getAttribute('data-km') !== null) ev.target.blur(); };
+  $('lista').addEventListener('focusout', function () { setTimeout(function () { if (S.listaPendente) desenharLista(); }, 50); });
+  $('lista').onclick = function (ev) {
+    var b = ev.target.closest('button'); if (!b) return;
+    var a = S.eq.alunos[+b.getAttribute('data-i')];
+    if (b.classList.contains('motbtn')) abrirMotivo(a); else if (b.classList.contains('principal')) marcar(a);
+  };
+  desenhar();
+}
+
+function desenhar() {
+  if (S.aberta) ls('modo|' + S.monitora, S.aberta.id + '|' + S.modo);
+  $('mE').className = S.modo === 'entrada' ? 'on' : '';
+  $('mS').className = S.modo === 'saida' ? 'on' : '';
+  $('filtro').className = 'filtro' + (S.filtro ? ' on' : '');
+  $('dica').textContent = S.modo === 'entrada'
+    ? 'Toque no nome quando o aluno ENTRAR no veículo. Toque de novo para desfazer.'
+    : 'Toque no nome quando o aluno SAIR do veículo. Toque de novo para desfazer.';
+  desenharContas(); desenharLista();
+}
+
+function contar() {
+  var c = { total: S.eq.alunos.length, vieram: 0, foram: 0, faltas: 0, semSaida: 0, nomesSemSaida: [], ida: 0, idaSemVolta: [] };
+  var lig = vinculada();
+  S.eq.alunos.forEach(function (a) {
+    var s = S.estado[K(a)] || vazio();
+    if (s.entrada) c.vieram++; else c.faltas++;
+    if (s.saida) c.foram++;
+    var espera = s.entrada || (lig && veioIda(a));
+    if (espera && !s.saida) { c.semSaida++; if (!s.motivo) c.nomesSemSaida.push(a.aluno); }
+    if (lig && veioIda(a)) { c.ida++; if (!s.saida && !s.motivo) c.idaSemVolta.push(a.aluno); }
+  });
+  return c;
+}
+
+function desenharContas() {
+  if (!$('contas')) return;
+  var c = contar();
+  if (vinculada() && S.modo === 'saida') {
+    $('contas').innerHTML = '<div class="conta"><b>' + c.ida + '</b><span>Vieram na ida</span></div>' +
+      '<div class="conta"><b>' + c.foram + '</b><span>Saíram</span></div><div class="conta"><b>' + c.semSaida + '</b><span>Falta sair</span></div>';
+    return;
+  }
+  $('contas').innerHTML = '<div class="conta"><b>' + c.vieram + '/' + c.total + '</b><span>Entraram</span></div>' +
+    '<div class="conta"><b>' + c.foram + '</b><span>Saíram</span></div>' +
+    (S.modo === 'entrada' ? '<div class="conta"><b>' + c.faltas + '</b><span>Não entraram</span></div>'
+                          : '<div class="conta"><b>' + c.semSaida + '</b><span>Falta sair</span></div>');
+}
+
+function classe(s, a) {
+  if (vinculada() && S.modo === 'saida' && a) {
+    if (s.saida) return (s.entrada || veioIda(a)) ? 'ok' : 'alerta';
+    if (s.motivo) return 'just';
+    return (s.entrada || veioIda(a)) ? 'meio' : '';
+  }
+  if (s.entrada && s.saida) return 'ok';
+  if (S.modo === 'entrada' && s.entrada && !s.motivo) return 'ok';
+  if (!s.entrada && s.saida) return 'alerta';
+  if (s.motivo) return 'just';
+  if (s.entrada) return 'meio';
+  return '';
+}
+
+function desenharLista() {
+  if (!$('lista')) return;
+  var q = sem(S.busca.trim());
+  var varias = S.eq.escolas.length > 1;
+  var foco = document.activeElement;
+  if (foco && foco.getAttribute && foco.getAttribute('data-km') !== null && $('lista').contains(foco)) { S.listaPendente = true; return; }
+  S.listaPendente = false;
+  var sugestaoKm = ultimoKm();
+  var h = '', n = 0;
+  S.eq.alunos.forEach(function (a, i) {
+    var s = S.estado[K(a)] || vazio();
+    if (S.escolaF && a.escola !== S.escolaF) return;
+    if (q && sem(a.aluno + ' ' + a.escola).indexOf(q) < 0) return;
+    if (S.filtro && (S.modo === 'entrada' ? s.entrada : (!(s.entrada || (vinculada() && veioIda(a))) || s.saida))) return;
+    n++;
+    var marcado = S.modo === 'entrada' ? s.entrada : s.saida;
+    var chips = '';
+    if (s.entrada) chips += '<span class="chip e">Entrou ' + esc(s.horaE) + (temKm(s.kmE) ? ' • KM ' + kmBR(s.kmE) : '') + '</span>';
+    if (s.saida) chips += '<span class="chip s">Saiu ' + esc(s.horaS) + (temKm(s.kmS) ? ' • KM ' + kmBR(s.kmS) : '') + '</span>';
+    if (!s.entrada && s.saida && !(vinculada() && veioIda(a))) chips += '<span class="chip x">' + (vinculada() ? 'Saiu sem ter vindo na ida' : 'Saída sem entrada') + '</span>';
+    if (s.motivo) chips += '<span class="chip m">' + esc(s.motivo) + '</span>';
+    if (s.obs) chips += '<span class="chip">📝 ' + esc(s.obs.length > 30 ? s.obs.slice(0, 30) + '…' : s.obs) + '</span>';
+    if (vinculada()) {
+      var ri = S.ida[K(a)];
+      chips = (ri && ri.entrada ? '<span class="chip e">Ida ✓ ' + esc(ri.horaE) + '</span>' : '<span class="chip">Não veio na ida' + (ri && ri.motivo ? ' – ' + esc(ri.motivo) : '') + '</span>') + chips;
+    }
+    if (!chips) chips = '<span class="chip">' + (S.modo === 'entrada' ? 'Ainda não entrou' : 'Não entrou nesta viagem') + '</span>';
+    if (varias && !S.escolaF) chips += '<span class="chip esc">🏫 ' + esc(a.escola) + '</span>';
+    var campo = S.modo === 'entrada' ? 'kmE' : 'kmS';
+    h += '<div class="card ' + classe(s, a) + '"><div class="cardtop"><button class="principal" data-i="' + i + '"><span class="caixa' + (marcado ? ' on' : '') + '">' + (marcado ? '✓' : '') + '</span>' +
+      '<span class="info"><div class="aluno">' + esc(a.aluno) + '</div><div class="chips">' + chips + '</div></span></button>' +
+      '<button class="motbtn" data-i="' + i + '">Motivo</button></div>' +
+      '<label class="kmlinha"><span>KM ' + (S.modo === 'entrada' ? 'entrada' : 'saída') + '</span>' +
+      '<input inputmode="decimal" enterkeyhint="done" autocomplete="off" data-km="' + i + '" value="' + esc(temKm(s[campo]) ? s[campo] : '') + '"' +
+      ' placeholder="' + (sugestaoKm !== '' ? 'último: ' + kmBR(sugestaoKm) : 'opcional') + '"></label></div>';
+  });
+  if (!n) h = '<div class="vazio">' + (S.filtro ? 'Ninguém faltando aqui 🎉' : 'Nenhum aluno encontrado.') + '</div>';
+  $('lista').innerHTML = h;
+}
+
+/* ---------- ações ---------- */
+function enfileirar(viagem, k, estado) {
+  var f = S.fila[viagem.id] || (S.fila[viagem.id] = { viagem: null, mud: {} });
+  f.viagem = copia(viagem);
+  if (k) f.mud[k] = copia(estado);
+  guardarFila(); foto();
+  status('Salvando…');
+  clearTimeout(S.timer); S.timer = setTimeout(enviar, 600);
+}
+
+function alterar(a, mudar) {
+  var k = K(a);
+  var s = copia(S.estado[k] || vazio());
+  mudar(s);
+  S.estado[k] = s;
+  var c = contar(); S.aberta.entraram = c.vieram; S.aberta.sairam = c.foram;
+  atualizarHoje(S.aberta);
+  enfileirar(S.aberta, k, s);
+  desenharContas(); desenharLista();
+}
+
+function temKm(n) { return n !== '' && n != null && !isNaN(n); }
+
+/** Maior KM já anotado nesta viagem (sugestão para o próximo ponto). */
+function ultimoKm() {
+  var m = (S.aberta && temKm(S.aberta.kmInicial)) ? Number(S.aberta.kmInicial) : '';
+  Object.keys(S.estado).forEach(function (k) {
+    var s = S.estado[k];
+    [s.kmE, s.kmS].forEach(function (x) { if (temKm(x) && (m === '' || Number(x) > m)) m = Number(x); });
+  });
+  return m;
+}
+
+function marcar(a) {
+  alterar(a, function (x) {
+    if (S.modo === 'entrada') { x.entrada = !x.entrada; x.horaE = x.entrada ? agora() : ''; if (!x.entrada) x.kmE = ''; }
+    else { x.saida = !x.saida; x.horaS = x.saida ? agora() : ''; if (!x.saida) x.kmS = ''; }
+  });
+  if (navigator.vibrate) try { navigator.vibrate(15); } catch (e) {}
+}
+
+function abrirFolha(h) {
+  var folha = $('folha'), fundo = $('fundoFolha');
+  folha.innerHTML = h; folha.style.display = 'block'; fundo.style.display = 'block';
+  fundo.onclick = fecharFolha;
+}
+function fecharFolha() { $('folha').style.display = 'none'; $('fundoFolha').style.display = 'none'; }
+
+function abrirMotivo(a) {
+  var s = S.estado[K(a)] || vazio();
+  var escolhido = s.motivo;
+  var lista = S.eq.motivos.slice();
+  if (escolhido && lista.indexOf(escolhido) < 0) lista.push(escolhido);
+  var h = '<h2>' + esc(a.aluno) + '</h2><div class="sub">Por que faltou ou não saiu no veículo?</div><div class="opcoes">';
+  lista.forEach(function (m, i) { h += '<button class="opcao' + (m === escolhido ? ' on' : '') + '" data-m="' + i + '">' + esc(m) + '</button>'; });
+  h += '</div>';
+  if (s.entrada || s.saida) {
+    h += '<div class="grade" style="margin-top:12px">' +
+      (s.entrada ? '<label>KM do ponto de entrada<input inputmode="decimal" id="mKmE" value="' + esc(temKm(s.kmE) ? s.kmE : '') + '"></label>' : '<span></span>') +
+      (s.saida ? '<label>KM do ponto de saída<input inputmode="decimal" id="mKmS" value="' + esc(temKm(s.kmS) ? s.kmS : '') + '"></label>' : '<span></span>') + '</div>';
+  }
+  h += '<textarea id="obs" placeholder="Observação (opcional)">' + esc(s.obs) + '</textarea><div class="msg" id="mMsg"></div>' +
+       '<div class="acoes"><button id="limpar">Sem motivo</button><button class="salvar" id="ok">Salvar</button></div>';
+  abrirFolha(h);
+  var folha = $('folha');
+  Array.prototype.forEach.call(folha.querySelectorAll('.opcao'), function (b) {
+    b.onclick = function () {
+      var m = lista[+b.getAttribute('data-m')];
+      escolhido = escolhido === m ? '' : m;
+      Array.prototype.forEach.call(folha.querySelectorAll('.opcao'), function (o) { o.classList.toggle('on', lista[+o.getAttribute('data-m')] === escolhido); });
+    };
+  });
+  var lerKm = function () {
+    var e = $('mKmE') ? num($('mKmE').value) : s.kmE, sa = $('mKmS') ? num($('mKmS').value) : s.kmS;
+    if (isNaN(e) || isNaN(sa)) { $('mMsg').textContent = 'Confira o KM: use só números.'; return null; }
+    return { kmE: e == null ? '' : e, kmS: sa == null ? '' : sa };
+  };
+  $('limpar').onclick = function () { var k = lerKm(); if (!k) return; var obs = $('obs').value.trim(); alterar(a, function (x) { x.motivo = ''; x.obs = obs; x.kmE = k.kmE; x.kmS = k.kmS; }); fecharFolha(); };
+  $('ok').onclick = function () { var k = lerKm(); if (!k) return; var obs = $('obs').value.trim(); alterar(a, function (x) { x.motivo = escolhido; x.obs = obs; x.kmE = k.kmE; x.kmS = k.kmS; }); fecharFolha(); };
+}
+
+function editarInicio() {
+  var v = S.aberta;
+  var h = '<h2>Dados da viagem</h2><div class="sub">Corrija se precisar.</div>' +
+    '<span class="rot2">Período</span><div class="seg c3" id="ePer">' + LISTA_PERIODOS.map(function (p) {
+      return '<button data-v="' + p + '" class="' + (v.periodo === p ? 'on' : '') + '">' + p + '</button>'; }).join('') + '</div>' +
+    '<span class="rot2">Sentido</span><div class="seg c1" id="eSen">' + LISTA_SENTIDOS.map(function (x) {
+      return '<button data-v="' + esc(x) + '" class="' + (v.sentido === x ? 'on' : '') + '">' + esc(x) + '</button>'; }).join('') + '</div>' +
+    '<div class="grade" style="margin-top:12px"><label>Hora de início<input type="time" id="eHora" value="' + esc(v.horaInicio) + '"></label>' +
+    '<label>KM inicial (opcional)<input inputmode="decimal" id="eKm" value="' + esc(v.kmInicial === '' || v.kmInicial == null ? '' : v.kmInicial) + '"></label></div>' +
+    '<div class="msg" id="eMsg"></div><div class="acoes"><button id="eCanc">Cancelar</button><button class="salvar" id="eOk">Salvar</button></div>';
+  abrirFolha(h);
+  var per = v.periodo, sen = v.sentido;
+  Array.prototype.forEach.call($('ePer').querySelectorAll('button'), function (b) { b.onclick = function () { per = b.getAttribute('data-v'); Array.prototype.forEach.call($('ePer').children, function (x) { x.classList.toggle('on', x === b); }); }; });
+  Array.prototype.forEach.call($('eSen').querySelectorAll('button'), function (b) { b.onclick = function () { sen = b.getAttribute('data-v'); Array.prototype.forEach.call($('eSen').children, function (x) { x.classList.toggle('on', x === b); }); }; });
+  $('eCanc').onclick = fecharFolha;
+  $('eOk').onclick = function () {
+    var km = num($('eKm').value);
+    if (isNaN(km)) { $('eMsg').textContent = 'Confira o KM: use só números.'; return; }
+    v.periodo = per; v.sentido = sen; v.horaInicio = $('eHora').value || v.horaInicio; v.kmInicial = km;
+    atualizarHoje(v); enfileirar(v); fecharFolha(); principal();
+  };
+}
+
+function abrirFinalizar() {
+  var v = S.aberta, c = contar();
+  var h = '<h2>Finalizar viagem</h2><div class="sub">' + esc(v.periodo + ' • ' + curto(v.sentido) + ' • início ' + (v.horaInicio || '--:--')) + '</div>' +
+    '<div class="resumo"><div><b>' + c.vieram + '/' + c.total + '</b>Entraram</div><div><b>' + c.foram + '</b>Saíram</div><div><b>' + c.faltas + '</b>Não entraram</div></div>';
+  if (vinculada() && c.idaSemVolta.length) {
+    h += '<div class="alerta">🔗 <b>' + c.idaSemVolta.length + ' aluno(s) vieram na ida e não têm saída nesta volta:</b><br>' +
+      esc(c.idaSemVolta.slice(0, 8).join(', ')) + (c.idaSemVolta.length > 8 ? '…' : '') +
+      '<br>Marque a SAÍDA ou coloque o <b>Motivo</b> (ex.: responsável buscou na escola).</div>';
+  } else if (c.nomesSemSaida.length && !(/^Ida/.test(v.sentido) && c.foram === 0)) {
+    h += '<div class="alerta">⚠️ <b>' + c.nomesSemSaida.length + ' aluno(s) entraram e não têm saída marcada:</b><br>' +
+      esc(c.nomesSemSaida.slice(0, 8).join(', ')) + (c.nomesSemSaida.length > 8 ? '…' : '') +
+      '<br>Se ficaram na escola ou foram buscados, coloque o <b>Motivo</b> antes de finalizar.</div>';
+  }
+  h += '<div class="grade"><label>Hora de término<span class="hora"><input type="time" id="fHora" value="' + esc(v.horaFim || agora()) + '"><button id="fAgora">Agora</button></span></label>' +
+    '<label>KM final – escola / último ponto (opcional)<input inputmode="decimal" id="fKm" value="' + (temKm(v.kmFinal) ? v.kmFinal : '') + '" placeholder="Ex.: 45262"></label></div>' +
+    '<div id="fRod" style="font-size:14px;margin-top:8px"></div>' +
+    '<textarea id="fObs" placeholder="Observação da viagem (opcional)">' + esc(v.obs || '') + '</textarea>' +
+    '<div class="msg" id="fMsg"></div><div class="acoes"><button id="fVoltar">Voltar</button><button class="salvar" id="fOk" style="background:var(--vermelho);border-color:var(--vermelho)">Finalizar</button></div>';
+  abrirFolha(h);
+  $('fAgora').onclick = function () { $('fHora').value = agora(); };
+  $('fKm').oninput = function () {
+    var kf = num(this.value), ki = v.kmInicial;
+    $('fRod').innerHTML = (kf !== '' && !isNaN(kf) && ki !== '' && ki != null && kf < ki) ? '<span style="color:#c0392b">KM final menor que o inicial.</span>' : '';
+  };
+  $('fVoltar').onclick = fecharFolha;
+  $('fOk').onclick = function () {
+    var kf = num($('fKm').value);
+    if (isNaN(kf)) { $('fMsg').textContent = 'Confira o KM: use só números.'; return; }
+    if (kf !== '' && v.kmInicial !== '' && v.kmInicial != null && kf < v.kmInicial) { $('fMsg').textContent = 'O KM final está menor que o inicial.'; return; }
+    var f = copia(v);
+    f.horaFim = $('fHora').value || agora(); f.kmFinal = kf; f.obs = $('fObs').value.trim(); f.status = 'Finalizada';
+    f.entraram = c.vieram; f.sairam = c.foram; f.alunos = c.total;
+    atualizarHoje(f);
+    enfileirar(f);
+    S.memo[f.id] = copia(S.estado);
+    S.aberta = null; S.estado = {}; S.ida = {}; S.novo = null;
+    fecharFolha(); foto(); principal();
+    toast('Viagem finalizada às ' + f.horaFim + ' ✓');
+  };
+}
+
+function num(t) { t = String(t == null ? '' : t).trim(); if (!t) return ''; if (t.indexOf(',') >= 0) t = t.replace(/\./g, '').replace(',', '.'); var n = Number(t); return isFinite(n) && n >= 0 ? n : NaN; }
+
+/* ---------- envio (fila guardada no celular) ---------- */
+function status(t, erro) { var el = $('status'); if (el) { el.textContent = t; el.className = 'status' + (erro ? ' erro' : ''); } }
+function agendarRetry() { clearTimeout(S.retry); S.retry = setTimeout(function () { S.offline ? reconectar() : enviar(); }, 8000); }
+
+function reconectar() {
+  chamar('apiCarregar', S.monitora, S.senha).then(function (d) {
+    S.offline = false;
+    var tela = !!S.aberta;
+    aplicar(d);
+    if (tela !== !!S.aberta) principal();
+  }).catch(function () { agendarRetry(); });
+}
+
+function enviar() {
+  if (S.offline) { agendarRetry(); return; }
+  if (S.enviando) return;
+  var ids = Object.keys(S.fila);
+  if (!ids.length) { status('Tudo salvo ✓'); return; }
+  var id = ids[0];
+  var lote = copia(S.fila[id]);
+  var lista = Object.keys(lote.mud).map(function (k) { var x = copia(lote.mud[k]); var p = k.indexOf('¦'); x.escola = k.slice(0, p); x.aluno = k.slice(p + 1); return x; });
+  S.enviando = true; status('Salvando…');
+  chamar('apiSalvar', S.monitora, lote.viagem, lista, S.senha).then(function (r) {
+    S.enviando = false;
+    var f = S.fila[id];
+    if (f) {
+      Object.keys(lote.mud).forEach(function (k) { if (JSON.stringify(f.mud[k]) === JSON.stringify(lote.mud[k])) delete f.mud[k]; });
+      if (!Object.keys(f.mud).length && JSON.stringify(f.viagem) === JSON.stringify(lote.viagem)) delete S.fila[id];
+    }
+    if (r.viagem && r.viagem.data === S.eq.data && !S.fila[id]) {
+      var atual = S.aberta && S.aberta.id === id;
+      atualizarHoje(r.viagem);
+      if (atual) { S.aberta.entraram = r.viagem.entraram; S.aberta.sairam = r.viagem.sairam; }
+      else if (!S.aberta && $('iIr')) { lerNovo(); telaInicio(); }
+    }
+    guardarFila(); foto();
+    if (temFila()) enviar(); else status('Salvo ✓ ' + r.hora);
+  }).catch(function (e) {
+    S.enviando = false;
+    var m = msgErro(e);
+    if (m.indexOf('SENHA') >= 0) return telaSenha(carregar, true);
+    if (m.indexOf('EQUIPE') >= 0) return abrirDados('Seus dados precisam ser preenchidos de novo.');
+    if (/inválid/i.test(m)) { delete S.fila[id]; guardarFila(); return enviar(); }
+    status('Sem internet – salvando no celular', true); agendarRetry();
+  });
+}
+
+window.addEventListener('online', function () { S.offline ? reconectar() : enviar(); });
+document.addEventListener('visibilitychange', function () {
+  if (document.visibilityState !== 'visible' || !S.eq || !S.eq.data) return;
+  if (temFila()) enviar();
+  else if (!S.aberta && S.eq.data !== hojeLocal()) carregar();
+});
+window.addEventListener('beforeunload', function (e) { if (temFila()) { e.preventDefault(); e.returnValue = ''; } });
+
+iniciar();
+
+</script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }</script>
+</body>
+</html>

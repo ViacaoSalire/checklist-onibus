@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Relatório – Transporte Escolar</title>
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#1f3a5f">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Checklist">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" href="icon-192.png">
+<script src="config.js?v2026-10-02-6"></script>
+
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<style>
+  :root{
+    --azul:#1f3a5f; --azul2:#2d5486; --fundo:#f3f5f9; --card:#fff; --borda:#dfe4ec; --texto:#1d2633; --suave:#667085;
+    --verde:#1e8e4f; --verdeBg:#e3f5ea; --amareloBg:#fff4d6; --vermelho:#c0392b; --vermelhoBg:#fde7e5; --lilasBg:#ece9fb;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--fundo);color:var(--texto);font:15px/1.4 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+  button,input,select{font:inherit;color:inherit}
+  header{background:var(--azul);color:#fff;padding:18px 20px 0}
+  .wrap{max-width:1100px;margin:0 auto}
+  header h1{margin:0;font-size:20px}
+  header .esc{opacity:.8;font-size:13px;margin-top:2px}
+  .abas{display:flex;gap:4px;margin-top:14px}
+  .abas button{border:0;background:transparent;color:#fff;opacity:.75;padding:10px 16px;border-radius:10px 10px 0 0;font-weight:700}
+  .abas button.on{background:var(--fundo);color:var(--azul);opacity:1}
+  main{padding:16px 20px 40px}
+  .filtros{display:flex;flex-wrap:wrap;gap:10px;align-items:end;background:#fff;border:1px solid var(--borda);border-radius:14px;padding:12px 14px}
+  .filtros label{display:flex;flex-direction:column;font-size:12px;color:var(--suave);gap:4px}
+  .filtros input,.filtros select{border:1px solid var(--borda);border-radius:9px;padding:8px 10px;background:#fff;min-width:150px}
+  .btn{border:1px solid var(--azul);background:var(--azul);color:#fff;border-radius:9px;padding:9px 14px;font-weight:700;cursor:pointer}
+  .btn.claro{background:#fff;color:var(--azul)}
+  .atual{margin-left:auto;font-size:12px;color:var(--suave)}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:16px 0}
+  .kpi{background:#fff;border:1px solid var(--borda);border-radius:14px;padding:12px 14px}
+  .kpi b{display:block;font-size:26px;color:var(--azul);font-variant-numeric:tabular-nums}
+  .kpi span{font-size:12px;color:var(--suave)}
+  h2{font-size:16px;margin:22px 0 8px;color:var(--azul)}
+  .tabela{overflow-x:auto;background:#fff;border:1px solid var(--borda);border-radius:14px}
+  table{border-collapse:collapse;width:100%;min-width:560px}
+  th,td{padding:8px 10px;border-bottom:1px solid #edf0f5;text-align:left;vertical-align:top}
+  th{font-size:12px;text-transform:uppercase;letter-spacing:.02em;color:var(--suave);background:#f8f9fc;position:sticky;top:0}
+  td.n,th.n{text-align:right;font-variant-numeric:tabular-nums}
+  tr.ok td{background:var(--verdeBg)} tr.meio td{background:var(--amareloBg)}
+  tr.just td{background:var(--lilasBg)} tr.alerta td{background:var(--vermelhoBg)}
+  .tag{display:inline-block;font-size:12px;padding:1px 8px;border-radius:999px;background:#eef1f6;color:var(--suave)}
+  .tag.off{background:#fde7e5;color:#9b2c20}
+  .baixo{color:var(--vermelho);font-weight:700}
+  .sec{margin-top:18px}
+  .sec .cab{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+  .chipsF{display:flex;gap:6px;flex-wrap:wrap;margin-top:12px}
+  .chipsF button{border:1px solid var(--borda);background:#fff;border-radius:999px;padding:6px 12px;font-size:13px;cursor:pointer}
+  .chipsF button.on{background:var(--azul);color:#fff;border-color:var(--azul)}
+  .vazio{color:var(--suave);padding:16px}
+  .tela{max-width:420px;margin:60px auto;background:#fff;border:1px solid var(--borda);border-radius:16px;padding:24px}
+  .tela input{width:100%;border:1px solid var(--borda);border-radius:10px;padding:12px;font-size:17px;margin-top:8px}
+  .msg{color:var(--vermelho);font-size:14px;min-height:20px;margin:8px 0}
+  .so-print{display:none}
+  .vsec{margin-top:18px}
+  .vsec h3{margin:0;font-size:15px;color:var(--azul)}
+  .vsec .det{font-size:13px;color:var(--suave);margin:2px 0 8px}
+  .tag.ok{background:#d3efdf;color:#11683a} .tag.and{background:#fff1c7;color:#7a5200}
+  .monit{margin-top:26px;padding-top:6px;border-top:2px solid var(--borda)}
+  @page{size:A4 landscape;margin:9mm}
+  @media print{
+    html,body{-webkit-print-color-adjust:exact;print-color-adjust:exact;font-size:11px}
+    .wrap{max-width:none}
+    .tabela{overflow:visible;border-radius:6px}
+    table{min-width:0;width:100%;font-size:10.5px}
+    th,td{padding:3px 5px}
+    th{position:static;font-size:9.5px}
+    .cards{grid-template-columns:repeat(8,1fr);gap:6px;margin:8px 0}
+    .kpi{padding:6px 8px;border-radius:8px}
+    .kpi b{font-size:17px}
+    .kpi span{font-size:9.5px}
+    h2{font-size:13px;margin:12px 0 5px}
+    .vsec h3{font-size:12px}
+    .monit{break-before:auto}
+    header .abas,.filtros,.chipsF,.nao-print{display:none!important}
+    header{background:#fff;color:#000;padding:0 0 8px}
+    body{background:#fff}
+    main{padding:0}
+    .so-print{display:block}
+    .kpi,.tabela{border-color:#ccc}
+    .sec{break-inside:auto}
+    tr{break-inside:avoid}
+  }
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <h1>Relatório do Transporte Escolar</h1>
+  <div class="esc">Chamada dos veículos, faltas, motivos, horários e KM</div>
+  <div class="abas"><button id="aDia" class="on">Dia</button><button id="aPer">Período</button></div>
+</div></header>
+<main class="wrap" id="main"></main>
+
+<script>
+var INIT = { monitora: new URLSearchParams(location.search).get('m') || '' };
+var G = { senha: '', aba: 'dia', dia: null, per: null, filtroDia: 'todos', monitora: '', escola: '', periodo: '', timer: null };
+
+function ls(k, v) { try { if (v === undefined) return localStorage.getItem(k); if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch (e) { return null; } }
+function esc(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function chamar(fn) {
+  var args = Array.prototype.slice.call(arguments, 1);
+  if (window.google && google.script && google.script.run) {
+    return new Promise(function (ok, falha) { var r = google.script.run.withSuccessHandler(ok).withFailureHandler(falha); r[fn].apply(r, args); });
+  }
+  // app instalável (GitHub Pages): fala com a mesma planilha pela API do Apps Script
+  if (!window.API_URL || !/^https?:\/\//.test(window.API_URL)) return Promise.reject(new Error('CONFIG: endereço da API não configurado no config.js'));
+  var ctrl = window.AbortController ? new AbortController() : null;
+  var t = setTimeout(function () { if (ctrl) ctrl.abort(); }, 30000);
+  return fetch(window.API_URL, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+    body: JSON.stringify({ fn: fn, args: args }), redirect: 'follow', signal: ctrl ? ctrl.signal : undefined })
+    .then(function (r) { clearTimeout(t); if (!r.ok) throw new Error('Network ' + r.status); return r.text(); })
+    .then(function (txt) {
+      var j; try { j = JSON.parse(txt); } catch (x) { throw new Error('Resposta inesperada do Google (confira se a implantação está como "Qualquer pessoa"): ' + txt.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').slice(0, 120)); }
+      if (!j || !j.ok) throw new Error((j && j.erro) || 'Erro no servidor'); return j.data;
+    },
+          function (e) { clearTimeout(t); throw e; });
+}
+function hojeLocal() { var d = new Date(); return d.getFullYear() + '-' + ('0' + (d.getMonth() + 1)).slice(-2) + '-' + ('0' + d.getDate()).slice(-2); }
+function $(id) { return document.getElementById(id); }
+function temKm(n) { return n !== '' && n != null && !isNaN(n); }
+function kmBR(n) { return temKm(n) ? Number(n).toLocaleString('pt-BR') : ''; }
+function curto(s) { return String(s || '').split(' (')[0]; }
+function kpi(v, t, alerta) { return '<div class="kpi"><b' + (alerta ? ' style="color:var(--vermelho)"' : '') + '>' + v + '</b><span>' + esc(t) + '</span></div>'; }
+
+function telaSenha(depois, erro) {
+  clearInterval(G.timer);
+  $('main').innerHTML = '<div class="tela"><b>Acesso da gestão</b><input id="senha" type="password" placeholder="Senha da gestão">' +
+    '<div class="msg">' + (erro ? 'Senha incorreta.' : '') + '</div><button class="btn" id="entrar">Entrar</button></div>';
+  var ir = function () { G.senha = $('senha').value.trim(); ls('senhaGes', G.senha); depois(); };
+  $('entrar').onclick = ir; $('senha').onkeydown = function (e) { if (e.key === 'Enter') ir(); }; $('senha').focus();
+}
+function falhou(e, depois) {
+  if (String((e && e.message) || e).indexOf('SENHA') >= 0) return telaSenha(depois, !!G.senha);
+  $('main').innerHTML = '<div class="tela"><b>Não consegui carregar.</b><p>' + esc((e && e.message) || e) + '</p><button class="btn" id="tentar">Tentar de novo</button></div>';
+  $('tentar').onclick = depois;
+}
+function opcoes(lista, atual, todas) {
+  return '<option value="">' + todas + '</option>' + lista.map(function (x) { return '<option' + (x === atual ? ' selected' : '') + '>' + esc(x) + '</option>'; }).join('');
+}
+function filtrarMon(ms) { return ms.filter(function (m) { return (!G.monitora || m.nome === G.monitora) && (!G.escola || m.escolas.indexOf(G.escola) >= 0); }); }
+function soEscola(alunos) { return alunos.filter(function (a) { return !G.escola || a.escola === G.escola; }); }
+function linhaClasse(a, v) {
+  if (v && /^Ida/.test(v.sentido) && a.entrada && !a.saida && !a.motivo) return 'ok';
+  if (a.entrada && a.saida) return 'ok';
+  if (!a.entrada && a.saida) return 'alerta';
+  if (a.motivo) return 'just';
+  if (a.entrada) return 'meio';
+  return '';
+}
+
+/** Sequência de pontos da viagem: início, cada ponto com KM (alunos que subiram/desceram) e final. */
+function pontos(v) {
+  var ev = {};
+  (v.alunos || []).forEach(function (a) {
+    if (G.escola && a.escola !== G.escola) return;
+    [['entrada', 'subiu', a.horaE, a.kmE], ['saida', 'desceu', a.horaS, a.kmS]].forEach(function (e) {
+      if (!a[e[0]] || !temKm(e[3])) return;
+      var k = e[3] + '|' + e[1];
+      var p = ev[k] || (ev[k] = { km: Number(e[3]), hora: e[2], tipo: e[1], alunos: [] });
+      if (e[2] && (!p.hora || e[2] < p.hora)) p.hora = e[2];
+      p.alunos.push(a.aluno);
+    });
+  });
+  var lista = Object.keys(ev).map(function (k) { return ev[k]; })
+    .sort(function (x, y) { return x.km - y.km || String(x.hora).localeCompare(String(y.hora)); });
+  if (!lista.length && !temKm(v.kmInicial) && !temKm(v.kmFinal)) return [];
+  var out = [{ nome: 'Início', hora: v.horaInicio, km: v.kmInicial, txt: '' }];
+  lista.forEach(function (p, i) { out.push({ nome: 'Ponto ' + (i + 1), hora: p.hora, km: p.km, txt: (p.tipo === 'subiu' ? '🚌 Subiram: ' : '🏠 Desceram: ') + p.alunos.join(', ') }); });
+  out.push({ nome: /^Ida/.test(v.sentido) ? 'Final (escola)' : 'Final', hora: v.status === 'Finalizada' ? v.horaFim : '', km: v.kmFinal, txt: v.status === 'Finalizada' ? '' : 'viagem em andamento' });
+  return out;
+}
+function tabelaPontos(v) {
+  var ps = pontos(v);
+  if (!ps.length) return '';
+  var h = '<div class="tabela" style="margin-bottom:8px"><table><thead><tr><th>Pontos da viagem</th><th>Hora</th><th class="n">KM</th><th>Alunos</th></tr></thead><tbody>';
+  ps.forEach(function (p) { h += '<tr><td><b>' + esc(p.nome) + '</b></td><td>' + esc(p.hora || '—') + '</td><td class="n">' + (kmBR(p.km) || '—') + '</td><td>' + esc(p.txt) + '</td></tr>'; });
+  return h + '</tbody></table></div>';
+}
+
+/** Compara, aluno a aluno, a ida com a volta vinculada. */
+function conferir(ida, volta) {
+  var mi = {}; ida.alunos.forEach(function (a) { mi[a.escola + '¦' + a.aluno] = a; });
+  return volta.alunos.map(function (b) {
+    var a = mi[b.escola + '¦' + b.aluno] || {};
+    var foi = !!a.entrada, voltou = !!b.saida, x = { aluno: b.aluno, escola: b.escola, ida: foi, volta: voltou, horaIda: a.horaE || '', horaVolta: b.horaS || '', kmIda: a.kmE, kmVolta: b.kmS };
+    if (foi && voltou) { x.tipo = 'ok'; x.texto = '✅ Foi e voltou'; }
+    else if (foi && b.motivo) { x.tipo = 'just'; x.texto = '🟣 Foi e não voltou no veículo – ' + b.motivo; }
+    else if (foi) { x.tipo = 'naoVoltou'; x.texto = '⚠️ Foi e NÃO voltou no veículo (sem motivo)'; }
+    else if (voltou) { x.tipo = 'semIda'; x.texto = '⚠️ Voltou sem ter ido na ida'; }
+    else { x.tipo = 'naoFoi'; x.texto = '❌ Não foi' + (a.motivo ? ' – ' + a.motivo : ''); }
+    return x;
+  });
+}
+
+/* ================= DIA ================= */
+function abrirDia(data) {
+  G.aba = 'dia'; marcarAba(); clearInterval(G.timer);
+  if (!G.dia) $('main').innerHTML = '<div class="vazio">Carregando…</div>';
+  chamar('apiRelatorioDia', data || (G.dia && G.dia.data) || '', G.senha).then(function (r) {
+    G.dia = r; desenharDia();
+    if (r.data === r.hoje) G.timer = setInterval(function () { if (G.aba === 'dia') chamar('apiRelatorioDia', G.dia.data, G.senha).then(function (x) { G.dia = x; desenharDia(); }).catch(function () {}); }, 60000);
+  }).catch(function (e) { falhou(e, function () { abrirDia(data); }); });
+}
+
+function desenharDia() {
+  var r = G.dia;
+  var ms = filtrarMon(r.monitoras);
+  var T = { viagens: 0, fin: 0, and: 0, entr: 0, nao: 0, motivo: 0, semSaida: 0, semViagem: 0, naoVoltou: 0 };
+  var linhas = [];
+  ms.forEach(function (m) {
+    var vs = m.viagens.filter(function (v) { return !G.periodo || v.periodo === G.periodo; });
+    if (!vs.length) { T.semViagem++; linhas.push({ m: m, v: null }); }
+    vs.forEach(function (v) {
+      var al = soEscola(v.alunos);
+      v._volta = !!(v.vinculo && m.viagens.some(function (x) { return x.id === v.vinculo; }));
+      v._idaLig = m.viagens.some(function (x) { return x.vinculo === v.id; });
+      var c = { entr: 0, sai: 0, nao: 0, motivo: 0, semSaida: 0 };
+      al.forEach(function (a) { if (a.entrada) c.entr++; else { c.nao++; if (a.motivo) c.motivo++; } if (a.saida) c.sai++; if (a.entrada && !a.saida && !a.motivo) c.semSaida++; });
+      v._c = c; v._al = al;
+      T.viagens++; if (v.status === 'Finalizada') { if (!v._idaLig && !v._volta && !/^Ida/.test(v.sentido)) T.semSaida += c.semSaida; T.fin++; } else T.and++;
+      if (!v._volta) { T.entr += c.entr; T.nao += c.nao; T.motivo += c.motivo; }
+      linhas.push({ m: m, v: v });
+    });
+    m.viagens.forEach(function (vt) {
+      var ida = vt.vinculo && m.viagens.filter(function (x) { return x.id === vt.vinculo; })[0];
+      if (!ida || (G.periodo && vt.periodo !== G.periodo && ida.periodo !== G.periodo)) return;
+      conferir(ida, vt).forEach(function (x) { if (x.tipo === 'naoVoltou' && (!G.escola || x.escola === G.escola)) T.naoVoltou++; });
+    });
+  });
+
+  var h = '<div class="so-print"><b>Data: ' + esc(r.dataBR) + '</b>' + (G.escola ? ' • Escola: ' + esc(G.escola) : '') + (G.monitora ? ' • Monitora: ' + esc(G.monitora) : '') + (G.periodo ? ' • ' + esc(G.periodo) : '') + '</div>' +
+    '<div class="filtros"><label>Data<input type="date" id="fData" value="' + r.data + '"></label>' +
+    '<label>Escola<select id="fEsc">' + opcoes(r.escolas, G.escola, 'Todas') + '</select></label>' +
+    '<label>Monitora<select id="fMon">' + opcoes(r.monitoras.map(function (m) { return m.nome; }), G.monitora, 'Todas') + '</select></label>' +
+    '<label>Período<select id="fPer">' + opcoes(['Manhã', 'Tarde', 'Noite'], G.periodo, 'Todos') + '</select></label>' +
+    '<button class="btn claro" id="bHoje">Hoje</button><button class="btn" id="bPrint">Imprimir / PDF</button>' +
+    '<span class="atual">' + (r.data === r.hoje ? 'Atualiza sozinho a cada minuto' : '') + '</span></div>';
+  h += '<div class="cards">' + kpi(T.fin + '/' + T.viagens, 'Viagens finalizadas') + kpi(T.and, 'Viagens em andamento') +
+    kpi(T.entr, 'Entradas de alunos') + kpi(T.nao, 'Não entraram') + kpi(T.motivo, 'Faltas com motivo') +
+    kpi(T.semSaida, 'Entraram e não saíram (sem motivo)', T.semSaida > 0) + kpi(T.naoVoltou, 'Foram na ida e não voltaram (sem motivo)', T.naoVoltou > 0) +
+    kpi(T.semViagem, 'Monitoras sem viagem') + '</div>';
+
+  h += '<h2>Viagens do dia</h2><div class="tabela"><table><thead><tr><th>Monitora</th><th>Prefixo</th><th>Motorista</th><th>Período</th><th>Sentido</th>' +
+    '<th>Início</th><th>Fim</th><th class="n">KM inicial</th><th class="n">KM final</th><th>Status</th><th class="n">Entraram</th><th class="n">Saíram</th><th class="n">Não entraram</th></tr></thead><tbody>';
+  linhas.forEach(function (l) {
+    var m = l.m, v = l.v;
+    if (!v) { h += '<tr><td><b>' + esc(m.nome) + '</b></td><td>' + esc(m.prefixo) + '</td><td>' + esc(m.motorista) + '</td><td colspan="11"><span class="tag off">Sem viagem' + (G.periodo ? ' neste período' : ' neste dia') + '</span></td></tr>'; return; }
+    var fin = v.status === 'Finalizada';
+    h += '<tr><td><b>' + esc(m.nome) + '</b></td><td>' + esc(m.prefixo) + '</td><td>' + esc(v.motorista || m.motorista) + '</td><td>' + esc(v.periodo) + '</td><td>' + esc(curto(v.sentido)) + (v.vinculo ? ' 🔗' : '') + '</td>' +
+      '<td>' + esc(v.horaInicio) + '</td><td>' + esc(fin ? v.horaFim : '—') + '</td><td class="n">' + kmBR(v.kmInicial) + '</td><td class="n">' + kmBR(v.kmFinal) + '</td>' +
+      '<td><span class="tag ' + (fin ? 'ok' : 'and') + '">' + esc(v.status) + '</span></td>' +
+      (v._volta ? '<td class="n">(ida)</td><td class="n">' + v._c.sai + '</td><td class="n">—</td></tr>'
+                : '<td class="n">' + v._c.entr + '</td><td class="n">' + v._c.sai + '</td><td class="n">' + v._c.nao + '</td></tr>');
+  });
+  if (!linhas.length) h += '<tr><td colspan="13" class="vazio">Nada com esse filtro.</td></tr>';
+  h += '</tbody></table></div>';
+
+  h += '<div class="chipsF" id="chipsF">' + [['todos', 'Todos os alunos'], ['faltas', 'Não entraram'], ['motivo', 'Com motivo'],
+    ['semsaida', 'Entraram e não saíram'], ['alerta', 'Saída sem entrada']].map(function (c) {
+      return '<button data-f="' + c[0] + '" class="' + (G.filtroDia === c[0] ? 'on' : '') + '">' + c[1] + '</button>'; }).join('') + '</div>';
+
+  var atualMon = '';
+  linhas.forEach(function (l) {
+    var m = l.m, v = l.v;
+    if (!v) return;
+    if (atualMon !== m.nome) { h += '<div class="monit"><h2 style="margin-top:6px">' + esc(m.nome) + ' • Prefixo ' + esc(m.prefixo) + (m.rota ? ' • ' + esc(m.rota) : '') + '</h2></div>'; atualMon = m.nome; }
+    var al = v._al.filter(function (a) {
+      switch (G.filtroDia) {
+        case 'faltas': return !a.entrada;
+        case 'motivo': return !!a.motivo;
+        case 'semsaida': return a.entrada && !a.saida;
+        case 'alerta': return !a.entrada && a.saida;
+        default: return true;
+      }
+    });
+    var fin = v.status === 'Finalizada';
+    var det = (v.motorista ? 'Motorista: ' + v.motorista + ' • ' : '') + (v.horaInicio || '--:--') + ' → ' + (fin ? (v.horaFim || '--:--') : 'em andamento');
+    if (temKm(v.kmInicial)) det += ' • KM inicial ' + kmBR(v.kmInicial);
+    if (temKm(v.kmFinal)) det += ' • KM final ' + kmBR(v.kmFinal);
+    if (!v._volta) det += ' • ' + v._c.entr + ' de ' + v._al.length + ' entraram';
+    if (v.obs) det += ' • Obs.: ' + v.obs;
+    h += '<div class="vsec"><h3>' + esc(v.periodo) + ' • ' + esc(v.sentido) + ' <span class="tag ' + (fin ? 'ok' : 'and') + '">' + esc(v.status) + '</span></h3><div class="det">' + esc(det) + '</div>';
+    h += tabelaPontos(v);
+    var idaV = v.vinculo && m.viagens.filter(function (x) { return x.id === v.vinculo; })[0];
+    if (idaV) {
+      var todosConf = conferir(idaV, v).filter(function (x) { return !G.escola || x.escola === G.escola; });
+      var conf = todosConf.filter(function (x) {
+        switch (G.filtroDia) {
+          case 'faltas': return x.tipo === 'naoFoi';
+          case 'motivo': return x.tipo === 'just';
+          case 'semsaida': return x.tipo === 'naoVoltou';
+          case 'alerta': return x.tipo === 'semIda';
+          default: return true;
+        }
+      });
+      var n = { ok: 0, naoVoltou: 0, just: 0, semIda: 0, naoFoi: 0 };
+      todosConf.forEach(function (x) { n[x.tipo]++; });
+      var varias2 = m.escolas.length > 1 && !G.escola;
+      h += '<div class="det">🔗 <b>Volta vinculada à ida das ' + esc(idaV.horaInicio || '?') + '</b> – ' + n.ok + ' foram e voltaram • ' + n.naoVoltou + ' foram e não voltaram (sem motivo) • ' +
+        n.just + ' não voltaram com motivo • ' + n.semIda + ' voltaram sem ter ido • ' + n.naoFoi + ' não foram</div>';
+      if (!conf.length) { h += '<div class="tabela"><div class="vazio">Nenhum aluno neste filtro.</div></div></div>'; return; }
+      var comKm2 = todosConf.some(function (x) { return temKm(x.kmIda) || temKm(x.kmVolta); });
+      h += '<div class="tabela"><table><thead><tr><th>Aluno</th>' + (varias2 ? '<th>Escola</th>' : '') + '<th>Ida (entrada)</th>' + (comKm2 ? '<th class="n">KM ida</th>' : '') +
+        '<th>Volta (saída)</th>' + (comKm2 ? '<th class="n">KM volta</th>' : '') + '<th>Conferência</th></tr></thead><tbody>';
+      conf.forEach(function (x) {
+        var cls = { ok: 'ok', naoVoltou: 'alerta', just: 'just', semIda: 'alerta', naoFoi: '' }[x.tipo];
+        h += '<tr class="' + cls + '"><td>' + esc(x.aluno) + '</td>' + (varias2 ? '<td>' + esc(x.escola) + '</td>' : '') +
+          '<td>' + (x.ida ? '✔ ' + esc(x.horaIda) : '—') + '</td>' + (comKm2 ? '<td class="n">' + kmBR(x.kmIda) + '</td>' : '') +
+          '<td>' + (x.volta ? '✔ ' + esc(x.horaVolta) : '—') + '</td>' + (comKm2 ? '<td class="n">' + kmBR(x.kmVolta) + '</td>' : '') + '<td>' + esc(x.texto) + '</td></tr>';
+      });
+      h += '</tbody></table></div></div>';
+      return;
+    }
+    if (!al.length) { h += '<div class="tabela"><div class="vazio">Nenhum aluno neste filtro.</div></div></div>'; return; }
+    var varias = m.escolas.length > 1 && !G.escola;
+    var comKm = v._al.some(function (a) { return temKm(a.kmE) || temKm(a.kmS); });
+    h += '<div class="tabela"><table><thead><tr><th>Aluno</th>' + (varias ? '<th>Escola</th>' : '') + '<th>Entrada</th>' + (comKm ? '<th class="n">KM entrada</th>' : '') +
+      '<th>Saída</th>' + (comKm ? '<th class="n">KM saída</th>' : '') + '<th>Situação</th><th>Observação</th></tr></thead><tbody>';
+    al.forEach(function (a) {
+      h += '<tr class="' + linhaClasse(a, v) + '"><td>' + esc(a.aluno) + '</td>' + (varias ? '<td>' + esc(a.escola) + '</td>' : '') +
+        '<td>' + (a.entrada ? '✔ ' + esc(a.horaE) : '—') + '</td>' + (comKm ? '<td class="n">' + kmBR(a.kmE) + '</td>' : '') +
+        '<td>' + (a.saida ? '✔ ' + esc(a.horaS) : '—') + '</td>' + (comKm ? '<td class="n">' + kmBR(a.kmS) + '</td>' : '') +
+        '<td>' + esc(a.situacao) + '</td><td>' + esc(a.obs) + '</td></tr>';
+    });
+    h += '</tbody></table></div></div>';
+  });
+
+  $('main').innerHTML = h;
+  $('fData').onchange = function () { if (this.value) abrirDia(this.value); };
+  $('fMon').onchange = function () { G.monitora = this.value; desenharDia(); };
+  $('fEsc').onchange = function () { G.escola = this.value; desenharDia(); };
+  $('fPer').onchange = function () { G.periodo = this.value; desenharDia(); };
+  $('bHoje').onclick = function () { abrirDia(hojeLocal()); };
+  $('bPrint').onclick = function () { window.print(); };
+  Array.prototype.forEach.call(document.querySelectorAll('#chipsF button'), function (b) { b.onclick = function () { G.filtroDia = b.getAttribute('data-f'); desenharDia(); }; });
+}
+
+/* ================= PERÍODO ================= */
+function abrirPeriodo(de, ate) {
+  G.aba = 'periodo'; marcarAba(); clearInterval(G.timer);
+  $('main').innerHTML = '<div class="vazio">Calculando…</div>';
+  chamar('apiRelatorioPeriodo', de || '', ate || '', G.senha).then(function (r) { G.per = r; desenharPeriodo(); })
+    .catch(function (e) { falhou(e, function () { abrirPeriodo(de, ate); }); });
+}
+
+function desenharPeriodo() {
+  var r = G.per;
+  var ms = filtrarMon(r.monitoras).map(function (m) { var c = Object.assign({}, m); c.alunos = soEscola(m.alunos); return c; });
+  var h = '<div class="so-print"><b>Período: ' + esc(r.deBR) + ' a ' + esc(r.ateBR) + '</b>' + (G.escola ? ' • Escola: ' + esc(G.escola) : '') + (G.monitora ? ' • Monitora: ' + esc(G.monitora) : '') + '</div>' +
+    '<div class="filtros"><label>De<input type="date" id="pDe" value="' + r.de + '"></label><label>Até<input type="date" id="pAte" value="' + r.ate + '"></label>' +
+    '<label>Escola<select id="pEsc">' + opcoes(r.escolas, G.escola, 'Todas') + '</select></label>' +
+    '<label>Monitora<select id="pMon">' + opcoes(r.monitoras.map(function (m) { return m.nome; }), G.monitora, 'Todas') + '</select></label>' +
+    '<button class="btn claro" id="pGerar">Gerar</button><button class="btn" id="pPrint">Imprimir / PDF</button></div>';
+  var totAl = 0, soma = 0, nP = 0, faltas = 0, abaixo = 0, viagens = 0;
+  ms.forEach(function (m) {
+    viagens += m.viagens;
+    m.alunos.forEach(function (a) { totAl++; faltas += a.faltas; if (a.presenca !== null) { soma += a.presenca; nP++; if (a.presenca < 75) abaixo++; } });
+  });
+  h += '<div class="cards">' + kpi(viagens, 'Viagens') + kpi(totAl, 'Alunos') + kpi(nP ? Math.round(soma / nP) + '%' : '—', 'Presença média') +
+    kpi(faltas, 'Faltas') + kpi(abaixo, 'Alunos abaixo de 75%', abaixo > 0) + '</div>';
+  var nomes = ms.map(function (m) { return m.nome; });
+  var vs = r.viagens.filter(function (v) { return nomes.indexOf(v.monitora) >= 0; });
+  if (vs.length) {
+    h += '<h2>Viagens do período (horários e KM)</h2><div class="tabela"><table><thead><tr><th>Data</th><th>Monitora</th><th>Prefixo</th><th>Motorista</th>' +
+      '<th>Período</th><th>Sentido</th><th>Início</th><th>Fim</th><th class="n">KM inicial</th><th class="n">KM final</th><th class="n">Entraram</th></tr></thead><tbody>';
+    vs.forEach(function (v) {
+      h += '<tr><td>' + esc(v.dataBR) + '</td><td>' + esc(v.monitora) + '</td><td>' + esc(v.prefixo) + '</td><td>' + esc(v.motorista) + '</td><td>' + esc(v.periodo) + '</td>' +
+        '<td>' + esc(curto(v.sentido)) + '</td><td>' + esc(v.horaInicio) + '</td><td>' + esc(v.status === 'Finalizada' ? v.horaFim : 'em andamento') + '</td>' +
+        '<td class="n">' + kmBR(v.kmInicial) + '</td><td class="n">' + kmBR(v.kmFinal) + '</td><td class="n">' + (v.entraram || 0) + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+  }
+  ms.forEach(function (m) {
+    h += '<div class="sec"><div class="cab"><h2>' + esc(m.nome) + ' • Prefixo ' + esc(m.prefixo) + (m.motorista ? ' • ' + esc(m.motorista) : '') + (m.rota ? ' • ' + esc(m.rota) : '') + '</h2>' +
+      '<span class="tag">' + m.viagens + ' viagem(ns) em ' + m.dias + ' dia(s)' + '' + '</span></div>';
+    if (!m.viagens) { h += '<div class="tabela"><div class="vazio">Nenhuma viagem neste período.</div></div></div>'; return; }
+    var varias = m.escolas.length > 1 && !G.escola;
+    h += '<div class="tabela"><table><thead><tr><th>Aluno</th>' + (varias ? '<th>Escola</th>' : '') + '<th class="n">Entrou</th><th class="n">Faltas</th><th class="n">Presença</th>' +
+      '<th class="n">Saiu</th><th>Motivos informados</th></tr></thead><tbody>';
+    m.alunos.slice().sort(function (a, b) { return b.faltas - a.faltas || a.aluno.localeCompare(b.aluno); }).forEach(function (a) {
+      h += '<tr><td>' + esc(a.aluno) + '</td>' + (varias ? '<td>' + esc(a.escola) + '</td>' : '') + '<td class="n">' + a.veio + '</td><td class="n">' + a.faltas + '</td>' +
+        '<td class="n' + (a.presenca !== null && a.presenca < 75 ? ' baixo' : '') + '">' + (a.presenca === null ? '—' : a.presenca + '%') + '</td>' +
+        '<td class="n">' + a.foi + '</td><td>' + esc(a.motivos) + '</td></tr>';
+    });
+    h += '</tbody></table></div></div>';
+  });
+  $('main').innerHTML = h;
+  $('pGerar').onclick = function () { abrirPeriodo($('pDe').value, $('pAte').value); };
+  $('pMon').onchange = function () { G.monitora = this.value; desenharPeriodo(); };
+  $('pEsc').onchange = function () { G.escola = this.value; desenharPeriodo(); };
+  $('pPrint').onclick = function () { window.print(); };
+}
+
+function marcarAba() { $('aDia').className = G.aba === 'dia' ? 'on' : ''; $('aPer').className = G.aba === 'periodo' ? 'on' : ''; }
+$('aDia').onclick = function () { if (G.dia) { G.aba = 'dia'; marcarAba(); desenharDia(); } abrirDia(); };
+$('aPer').onclick = function () { if (G.per) { G.aba = 'periodo'; marcarAba(); desenharPeriodo(); } else abrirPeriodo(); };
+
+G.senha = ls('senhaGes') || '';
+abrirDia();
+</script>
+<script>if ('serviceWorker' in navigator) { window.addEventListener('load', function () { navigator.serviceWorker.register('sw.js').catch(function () {}); }); }</script>
+</body>
+</html>
